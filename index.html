@@ -1,29 +1,90 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="google-site-verification" content="QCNzWjtXditHIiMdi61weMvivbYgI0XrHkH974tqtJs" />
 <title>Option AI Trading Tool</title>
-<meta name="description" content="Nifty and BankNifty trading signals using AI">
+
+<meta name="google-site-verification" content="YOUR_CODE_HERE">
+<meta name="robots" content="index, follow">
+
 <style>
-body { font-family: Arial; text-align: center; }
-.box { border: 1px solid #000; padding: 20px; margin: 20px; }
-.buy { color: green; font-size: 24px; }
-.sell { color: red; font-size: 24px; }
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #0f172a;
+  color: white;
+}
+
+.box {
+  border: 1px solid #444;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 10px;
+  background: #1e293b;
+}
+
+.buy { color: #22c55e; font-size: 24px; }
+.sell { color: #ef4444; font-size: 24px; }
+
+button {
+  padding: 10px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+}
 </style>
 </head>
 
 <body>
 
-<h1>Option AI Trading Tool</h1>
+<h1>🚀 Option AI Trading Tool</h1>
+
+<button onclick="generateSignal()">Get Live Signal</button>
 
 <div class="box">
-<h2>Price: 22500</h2>
-<h2>Trend: UP</h2>
-<h2 class="buy">Signal: BUY</h2>
-<p>Entry: 22500</p>
-<p>SL: 22450</p>
-<p>Target: 22600</p>
+  <h2 id="price">Price: --</h2>
+  <h2 id="trend">Trend: --</h2>
+  <h2 id="signal">Signal: --</h2>
+  <p id="entry"></p>
+  <p id="sl"></p>
+  <p id="target"></p>
 </div>
+
+<script>
+function generateSignal() {
+
+  let price = Math.floor(Math.random() * 500) + 22000;
+
+  let trend = price > 22250 ? "UP" : "DOWN";
+
+  let signal, entry, sl, target;
+
+  if (trend === "UP") {
+    signal = "BUY";
+    entry = price;
+    sl = price - 50;
+    target = price + 100;
+  } else {
+    signal = "SELL";
+    entry = price;
+    sl = price + 50;
+    target = price - 100;
+  }
+
+  document.getElementById("price").innerText = "Price: " + price;
+  document.getElementById("trend").innerText = "Trend: " + trend;
+
+  let signalElement = document.getElementById("signal");
+  signalElement.innerText = "Signal: " + signal;
+  signalElement.className = signal === "BUY" ? "buy" : "sell";
+
+  document.getElementById("entry").innerText = "Entry: " + entry;
+  document.getElementById("sl").innerText = "SL: " + sl;
+  document.getElementById("target").innerText = "Target: " + target;
+}
+</script>
 
 </body>
 </html>
