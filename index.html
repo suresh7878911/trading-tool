@@ -132,5 +132,42 @@ WhatsApp
 style="position:fixed; bottom:20px; right:20px; background:#0088cc; color:white; padding:12px 18px; border-radius:50px; text-decoration:none;">
 Join Telegram
 </a>
-</body>
+</body> 
+  <script>
+async function generateSignal() {
+
+  let res = await fetch("https://api.allorigins.win/raw?url=https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI");
+  let data = await res.json();
+
+  let price = data.quoteResponse.result[0].regularMarketPrice;
+
+  let trend, signal, entry, sl, target;
+
+  // 🔥 Smart Logic (trend based)
+  if (price > 22250) {
+    trend = "UP";
+    signal = "BUY";
+    entry = price;
+    sl = price - 50;
+    target = price + 100;
+  } else {
+    trend = "DOWN";
+    signal = "SELL";
+    entry = price;
+    sl = price + 50;
+    target = price - 100;
+  }
+
+  document.getElementById("price").innerText = "Price: " + price;
+  document.getElementById("trend").innerText = "Trend: " + trend;
+
+  let signalElement = document.getElementById("signal");
+  signalElement.innerText = "Signal: " + signal;
+  signalElement.className = signal === "BUY" ? "buy" : "sell";
+
+  document.getElementById("entry").innerText = "Entry: " + entry;
+  document.getElementById("sl").innerText = "SL: " + sl;
+  document.getElementById("target").innerText = "Target: " + target;
+}
+</script>
 </html>  
