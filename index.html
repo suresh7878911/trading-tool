@@ -86,5 +86,29 @@ function generateSignal() {
 }
 </script>
 
-</body>
+</body><!-- LIVE MARKET -->
+<div style="background:black; color:white; padding:10px; text-align:center;">
+  <h3>Live Market</h3>
+  <p id="nifty">Loading NIFTY...</p>
+  <p id="banknifty">Loading BANKNIFTY...</p>
+</div>
+
+<script>
+async function getData(){
+  let res = await fetch("https://api.allorigins.win/raw?url=https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI,%5ENSEBANK");
+  let data = await res.json();
+
+  let nifty = data.quoteResponse.result[0].regularMarketPrice;
+  let bank = data.quoteResponse.result[1].regularMarketPrice;
+
+  document.getElementById("nifty").innerHTML = "NIFTY: " + nifty;
+  document.getElementById("banknifty").innerHTML = "BANKNIFTY: " + bank;
+}
+
+setInterval(getData, 5000);
+getData();
+</script>
+
+<!-- CHART -->
+<iframe src="https://s.tradingview.com/widgetembed/?symbol=NSE:NIFTY" width="100%" height="400"></iframe>
 </html>
