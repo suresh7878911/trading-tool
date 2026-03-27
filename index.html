@@ -3,9 +3,6 @@
 <head>
 <title>Option AI Trading Tool</title>
 
-<meta name="google-site-verification" content="YOUR_CODE_HERE">
-<meta name="robots" content="index, follow">
-
 <style>
 body {
   font-family: Arial;
@@ -38,14 +35,7 @@ button {
 </head>
 
 <body>
-<!-- HEADER MENU -->
-<div style="background:#111; color:white; padding:15px; display:flex; justify-content:space-around;">
-<a href="#" style="color:white;">Home</a>
-<a href="#" style="color:white;">Live Market</a>
-<a href="#" style="color:white;">Option Chain</a>
-<a href="#" style="color:white;">News</a>
-<a href="#" style="color:white;">Contact</a>
-</div>
+
 <h1>🚀 Option AI Trading Tool</h1>
 
 <button onclick="generateSignal()">Get Live Signal</button>
@@ -59,48 +49,16 @@ button {
   <p id="target"></p>
 </div>
 
-<script>
-function generateSignal() {
-
-  let price = Math.floor(Math.random() * 500) + 22000;
-
-  let trend = price > 22250 ? "UP" : "DOWN";
-
-  let signal, entry, sl, target;
-
-  if (trend === "UP") {
-    signal = "BUY";
-    entry = price;
-    sl = price - 50;
-    target = price + 100;
-  } else {
-    signal = "SELL";
-    entry = price;
-    sl = price + 50;
-    target = price - 100;
-  }
-
-  document.getElementById("price").innerText = "Price: " + price;
-  document.getElementById("trend").innerText = "Trend: " + trend;
-
-  let signalElement = document.getElementById("signal");
-  signalElement.innerText = "Signal: " + signal;
-  signalElement.className = signal === "BUY" ? "buy" : "sell";
-
-  document.getElementById("entry").innerText = "Entry: " + entry;
-  document.getElementById("sl").innerText = "SL: " + sl;
-  document.getElementById("target").innerText = "Target: " + target;
-}
-</script>
-
 <!-- LIVE MARKET -->
-<div style="background:black; color:white; padding:10px; text-align:center;">
+<div style="background:black; padding:10px;">
 <h3>Live Market</h3>
 <p id="nifty">Loading NIFTY...</p>
 <p id="banknifty">Loading BANKNIFTY...</p>
 </div>
 
 <script>
+
+// 🔥 Live Market Data
 async function getData(){
   let res = await fetch("https://api.allorigins.win/raw?url=https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI,%5ENSEBANK");
   let data = await res.json();
@@ -112,28 +70,7 @@ async function getData(){
   document.getElementById("banknifty").innerHTML = "BANKNIFTY: " + bank;
 }
 
-setInterval(getData, 5000);
-getData();
-</script>
-
-<!-- CHART -->
-<iframe 
-src="https://s.tradingview.com/widgetembed/?symbol=NSE:NIFTY" 
-width="100%" 
-height="400">
-</iframe>
- <!-- WhatsApp Button -->
-<a href="https://wa.me/919549344848" target="_blank" 
-style="position:fixed; bottom:70px; right:20px; background:#25D366; color:white; padding:12px 18px; border-radius:50px; text-decoration:none;">
-WhatsApp
-</a>
-<!-- Telegram Button -->
-<a href="https://t.me/bilinera_scalping_nifty50" target="_blank" 
-style="position:fixed; bottom:20px; right:20px; background:#0088cc; color:white; padding:12px 18px; border-radius:50px; text-decoration:none;">
-Join Telegram
-</a>
-</body> 
-  <script>
+// 🔥 AI Signal (Real Logic)
 async function generateSignal() {
 
   let res = await fetch("https://api.allorigins.win/raw?url=https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI");
@@ -143,19 +80,24 @@ async function generateSignal() {
 
   let trend, signal, entry, sl, target;
 
-  // 🔥 Smart Logic (trend based)
+  // 🔥 Improved Logic (Range + Breakout feel)
   if (price > 22250) {
-    trend = "UP";
+    trend = "UPTREND";
     signal = "BUY";
     entry = price;
     sl = price - 50;
-    target = price + 100;
-  } else {
-    trend = "DOWN";
+    target = price + 120;
+  } 
+  else if (price < 22150) {
+    trend = "DOWNTREND";
     signal = "SELL";
     entry = price;
     sl = price + 50;
-    target = price - 100;
+    target = price - 120;
+  } 
+  else {
+    trend = "SIDEWAYS";
+    signal = "WAIT";
   }
 
   document.getElementById("price").innerText = "Price: " + price;
@@ -163,11 +105,30 @@ async function generateSignal() {
 
   let signalElement = document.getElementById("signal");
   signalElement.innerText = "Signal: " + signal;
-  signalElement.className = signal === "BUY" ? "buy" : "sell";
+  signalElement.className = signal === "BUY" ? "buy" : signal === "SELL" ? "sell" : "";
 
-  document.getElementById("entry").innerText = "Entry: " + entry;
-  document.getElementById("sl").innerText = "SL: " + sl;
-  document.getElementById("target").innerText = "Target: " + target;
+  document.getElementById("entry").innerText = entry ? "Entry: " + entry : "";
+  document.getElementById("sl").innerText = sl ? "SL: " + sl : "";
+  document.getElementById("target").innerText = target ? "Target: " + target : "";
 }
+
+// Auto refresh
+setInterval(getData, 5000);
+getData();
+
 </script>
-</html>  
+
+<!-- WhatsApp -->
+<a href="https://wa.me/919549344848" target="_blank" 
+style="position:fixed; bottom:70px; right:20px; background:#25D366; padding:12px; border-radius:50px;">
+WhatsApp
+</a>
+
+<!-- Telegram -->
+<a href="https://t.me/bilinera_scalping_nifty50" target="_blank" 
+style="position:fixed; bottom:20px; right:20px; background:#0088cc; padding:12px; border-radius:50px;">
+Telegram
+</a>
+
+</body>
+</html>
