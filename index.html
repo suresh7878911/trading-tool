@@ -77,6 +77,8 @@ function openMarketDashboard(category,item){
  const desc=document.getElementById("dashboard-description");
  desc.textContent=category==="Stocks"?"Explore Indian listed companies by market segment and activity.": "Explore "+item.toLowerCase()+" across the "+category+" market category.";
  let rows=sampleRows[category]||[];
+ if(category==="All"&&item==="Stocks"){category="Stocks";document.getElementById("dashboard-category").textContent=category;rows=sampleRows.Stocks;}
+ if(category==="All"&&item==="Market Summary") rows=[["NIFTY 50","NSE Index"],["SENSEX","BSE Index"],...sampleRows.Stocks.slice(0,5)];
  if(category==="Stocks"&&item.toLowerCase().includes("gainer")) rows=rows.slice(0,5);
  if(category==="Stocks"&&item.toLowerCase().includes("loser")) rows=rows.slice(5,10);
  if(category==="Stocks"&&item.toLowerCase().includes("large")) rows=rows.slice(0,5);
