@@ -95,4 +95,23 @@ function openMarketDashboard(category,item){
  window.scrollTo({top:0,behavior:"smooth"});
 }
 document.getElementById("dashboard-back").addEventListener("click",()=>{document.getElementById("market-dashboard").hidden=true;document.querySelectorAll(".shell>section").forEach(s=>s.hidden=false);window.scrollTo({top:0,behavior:"smooth"})});
-\ndocument.querySelectorAll(".timeframe").forEach(button=>button.addEventListener("click",()=>{document.querySelectorAll(".timeframe").forEach(b=>b.classList.toggle("active",b===button));document.querySelector(".stats .stat:nth-child(2) b").textContent=button.dataset.frame;document.getElementById("chart-indicator-note").textContent=button.dataset.frame+" · illustrative preview";}));\ndocument.querySelectorAll(".chart-tool").forEach(button=>button.addEventListener("click",()=>{button.classList.toggle("active");const enabled=[...document.querySelectorAll(".chart-tool.active")].map(b=>b.dataset.indicator);document.getElementById("chart-indicator-note").textContent=enabled.length?enabled.join(" + ")+" preview enabled":"No indicators selected";}));\n</script></body></html>
+\n
+/* TradingINR chart preview renderer: deterministic sample OHLC, not exchange data */
+(function(){
+ const chart=document.querySelector(".chart"),svg=chart&&chart.querySelector("svg");if(!svg)return;
+ const ns="http://www.w3.org/2000/svg",closes=[172,178,175,184,181,188,185,179,183,191,187,195,192,199,194,202,198,205,201,210,206,214,208,217,212,220,216,224,219,228,223,232,227,235];
+ const candles=closes.map((v,i)=>({o:i?closes[i-1]:v-3,c:v,h:Math.max(v,i?closes[i-1]:v-3)+3+(i%3),l:Math.min(v,i?closes[i-1]:v-3)-2-(i%2)}));
+ const old=svg;old.replaceChildren();old.setAttribute("viewBox","0 0 800 245");old.setAttribute("preserveAspectRatio","none");
+ const make=(tag,attrs)=>{const e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));return e};
+ const min=160,max=245,y=v=>220-(v-min)/(max-min)*175,step=800/candles.length;
+ candles.forEach((d,i)=>{const x=i*step+step/2,up=d.c>=d.o,color=up?"#159568":"#d94e68";old.appendChild(make("line",{x1:x,y1:y(d.h),x2:x,y2:y(d.l),stroke:color,"stroke-width":1.5}));old.appendChild(make("rect",{x:x-step*.28,y:Math.min(y(d.o),y(d.c)),width:step*.56,height:Math.max(2,Math.abs(y(d.o)-y(d.c))),rx:1,fill:color}));});
+ const path=(values,color,width,dash)=>{const p=make("path",{d:values.map((v,i)=>(i?"L":"M")+(i*step+step/2)+" "+y(v)).join(" "),fill:"none",stroke:color,"stroke-width":width,"stroke-linecap":"round","stroke-linejoin":"round"});if(dash)p.setAttribute("stroke-dasharray","5 4");old.appendChild(p)};
+ const sma=(period)=>closes.map((v,i)=>closes.slice(Math.max(0,i-period+1),i+1).reduce((a,b)=>a+b,0)/Math.min(i+1,period));
+ window.renderPreviewIndicators=()=>{old.querySelectorAll("[data-overlay]").forEach(e=>e.remove());const selected=[...document.querySelectorAll(".chart-tool.active")].map(b=>b.dataset.indicator);selected.forEach((name)=>{let vals=name==="EMA"?sma(8):name==="VWAP"?sma(12):name==="RSI"?sma(5).map((v,i)=>v+(i%2?5:-5)):sma(4).map((v,i)=>v+(i%2?3:-3));const p=make("path",{d:vals.map((v,i)=>(i?"L":"M")+(i*step+step/2)+" "+y(v)).join(" "),fill:"none",stroke:name==="EMA"?"#5277d1":name==="VWAP"?"#d6a13b":name==="RSI"?"#9866c7":"#d94e68","stroke-width":1.7,"stroke-dasharray":"4 3","data-overlay":"1"});old.appendChild(p)});};
+ window.renderPreviewIndicators();
+})();
+document.querySelectorAll(".chart-tool").forEach(b=>b.addEventListener("click",()=>window.renderPreviewIndicators&&window.renderPreviewIndicators()));
+const globalSearch=document.querySelector(".marketsearch input");
+globalSearch.addEventListener("keydown",e=>{if(e.key==="Enter"){const q=globalSearch.value.trim().toLowerCase();const match=Object.entries(sampleRows).flatMap(([cat,rows])=>rows.map(r=>({cat,r}))).find(x=>x.r.join(" ").toLowerCase().includes(q));if(match)openMarketDashboard(match.cat,match.r[0]);else if(q)openMarketDashboard("Stocks","All stocks")}});
+
+document.querySelectorAll(".timeframe").forEach(button=>button.addEventListener("click",()=>{document.querySelectorAll(".timeframe").forEach(b=>b.classList.toggle("active",b===button));document.querySelector(".stats .stat:nth-child(2) b").textContent=button.dataset.frame;document.getElementById("chart-indicator-note").textContent=button.dataset.frame+" · illustrative preview";}));\ndocument.querySelectorAll(".chart-tool").forEach(button=>button.addEventListener("click",()=>{button.classList.toggle("active");const enabled=[...document.querySelectorAll(".chart-tool.active")].map(b=>b.dataset.indicator);document.getElementById("chart-indicator-note").textContent=enabled.length?enabled.join(" + ")+" preview enabled":"No indicators selected";}));\n</script></body></html>
