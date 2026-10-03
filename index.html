@@ -1,134 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Option AI Trading Tool</title>
-
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080d19"><meta name="description" content="TradingINR — AI-powered market workspace">
+<title>TradingINR — AI Market Workspace</title>
 <style>
-body {
-  font-family: Arial;
-  text-align: center;
-  background: #0f172a;
-  color: white;
-}
-
-.box {
-  border: 1px solid #444;
-  padding: 20px;
-  margin: 20px;
-  border-radius: 10px;
-  background: #1e293b;
-}
-
-.buy { color: #22c55e; font-size: 24px; }
-.sell { color: #ef4444; font-size: 24px; }
-
-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  border: none;
-  border-radius: 8px;
-  background: #3b82f6;
-  color: white;
-  cursor: pointer;
-}
+:root{--bg:#080d19;--panel:#101827;--panel2:#121e30;--line:#223047;--text:#e8f0ff;--muted:#8291a9;--cyan:#52e5d2;--blue:#648cff;--green:#43d6a0;--red:#ff7188}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#172b4b 0,transparent 55%),var(--bg);color:var(--text);font:14px Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial,sans-serif;min-height:100vh}button,input{font:inherit}button{cursor:pointer}.shell{max-width:1440px;margin:auto;padding:22px 28px}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding-bottom:18px}.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:21px;letter-spacing:.3px}.brandmark{width:39px;height:39px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(140deg,#52e5d2,#648cff);color:#08111e;font-size:21px;box-shadow:0 0 25px #52e5d233}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:2px;font-weight:600;margin-top:2px}.nav{display:flex;gap:24px;color:#9eabc0}.nav a,.foot a{color:inherit;text-decoration:none}.nav a:hover,.foot a:hover{color:var(--cyan)}.actions{display:flex;gap:10px;align-items:center}.btn{border:1px solid var(--line);border-radius:10px;padding:10px 15px;color:var(--text);background:#111b2b}.btn.primary{background:linear-gradient(100deg,#52e5d2,#78a5ff);border:0;color:#07111d;font-weight:800}.hero{text-align:center;padding:54px 0 34px}.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #29485a;background:#102331;border-radius:30px;padding:7px 13px;color:#a4f6e9;font-size:11px;letter-spacing:1.3px;text-transform:uppercase}.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}h1{font-size:clamp(36px,5.2vw,66px);line-height:1.04;margin:20px 0 14px;letter-spacing:-2.6px}.gradient{background:linear-gradient(90deg,#f0f7ff 20%,#52e5d2 58%,#8ba8ff);-webkit-background-clip:text;background-clip:text;color:transparent}.sub{max-width:680px;margin:auto;color:#9ba9bf;font-size:16px;line-height:1.7}.orb{width:104px;height:104px;margin:0 auto 20px;border-radius:30px;display:grid;place-items:center;background:linear-gradient(145deg,#152c42,#11172b);border:1px solid #3b6073;box-shadow:0 0 0 8px #52e5d20a,0 0 55px #52e5d21c;position:relative}.orb:before{content:"";position:absolute;inset:-7px;border:1px solid #52e5d23b;border-radius:35px;animation:spin 14s linear infinite}.orb svg{width:56px;height:56px}@keyframes spin{to{transform:rotate(360deg)}}.hero-actions{display:flex;justify-content:center;gap:12px;margin-top:25px}.grid{display:grid;grid-template-columns:1.65fr 1fr;gap:16px;margin-top:20px}.card{background:linear-gradient(145deg,#111b2b,#0e1725);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}.cardhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}.title{font-weight:750;font-size:14px}.muted{color:var(--muted)}.tag{border:1px solid var(--line);border-radius:7px;padding:5px 8px;color:#9eabc0;font-size:11px}.charttop{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.symbol{font-size:17px;font-weight:800}.chart{height:245px;position:relative;border:1px solid #1b2a3e;border-radius:10px;overflow:hidden;background:repeating-linear-gradient(to bottom,transparent 0,transparent 48px,#1d2b3d 49px),repeating-linear-gradient(to right,transparent 0,transparent 74px,#1d2b3d 75px),#0c1421}.chart svg{width:100%;height:100%;display:block}.chartlabel{position:absolute;left:12px;top:10px;color:#8291a9;font-size:10px}.chartfoot{display:flex;justify-content:space-between;gap:10px;color:#7888a1;font-size:10px;margin-top:9px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.stat{background:#0c1523;border:1px solid #1d2a3d;border-radius:10px;padding:12px}.stat span{display:block;color:var(--muted);font-size:11px}.stat b{display:block;font-size:17px;margin-top:7px}.positive{color:var(--green)}.negative{color:var(--red)}.watchrow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #1d2a3d}.watchrow:last-child{border:0}.coin{display:flex;align-items:center;gap:10px}.coinicon{width:30px;height:30px;border-radius:9px;background:#1b2a3f;display:grid;place-items:center;color:var(--cyan);font-weight:800}.coin small{display:block;color:var(--muted);margin-top:3px}.price{text-align:right;font-weight:700}.price small{display:block;margin-top:4px;font-weight:500}.featuregrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}.feature{padding:17px}.featureicon{width:36px;height:36px;border-radius:10px;background:#162b3a;color:var(--cyan);display:grid;place-items:center;font-size:18px;margin-bottom:13px}.feature h3{font-size:13px;margin:0 0 7px}.feature p{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.airow{display:flex;align-items:center;gap:12px}.aiavatar{width:35px;height:35px;border-radius:11px;background:linear-gradient(140deg,#52e5d2,#648cff);display:grid;place-items:center;color:#07111d;font-weight:900}.aihint{color:#a4b3c9;font-size:12px;line-height:1.6}.aiinput{display:flex;gap:8px;margin-top:15px}.aiinput input{min-width:0;flex:1;background:#0b1421;border:1px solid var(--line);border-radius:9px;padding:11px;color:var(--text);outline:none}.aiinput input:focus{border-color:#52e5d2}.foot{border-top:1px solid var(--line);margin-top:25px;padding:17px 0;color:#71819a;font-size:11px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.notice{font-size:10px;color:#75859d;line-height:1.5;margin-top:12px}@media(max-width:850px){.shell{padding:16px}.nav{display:none}.grid{grid-template-columns:1fr}.featuregrid{grid-template-columns:repeat(2,1fr)}.hero{padding-top:42px}}@media(max-width:480px){.shell{padding:12px}.actions .btn:not(.primary){display:none}.brand{font-size:18px}.hero{padding-top:34px}h1{letter-spacing:-1.5px}.sub{font-size:14px}.hero-actions .btn{padding:10px 12px}.stats{gap:6px}.stat{padding:9px}.stat b{font-size:14px}.featuregrid{gap:8px}.card{padding:13px}.chart{height:205px}}
 </style>
 </head>
-
 <body>
-
-<h1>🚀 Option AI Trading Tool</h1>
-
-<button onclick="generateSignal()">Get Live Signal</button>
-
-<div class="box">
-  <h2 id="price">Price: --</h2>
-  <h2 id="trend">Trend: --</h2>
-  <h2 id="signal">Signal: --</h2>
-  <p id="entry"></p>
-  <p id="sl"></p>
-  <p id="target"></p>
+<div class="shell">
+<header class="top"><div class="brand"><div class="brandmark">↗</div><div>TradingINR<small>AI MARKET WORKSPACE</small></div></div><nav class="nav"><a href="#markets">Markets</a><a href="#tools">Tools</a><a href="#assistant">AI Assistant</a></nav><div class="actions"><button class="btn" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact</button><button class="btn primary" onclick="showLogin()">Sign in ↗</button></div></header>
+<section class="hero"><div class="orb" aria-label="TradingINR AI logo"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M10 47V17M10 47H54" stroke="#718da8" stroke-width="2" stroke-linecap="round"/><path d="M15 40L26 30L34 35L49 16" stroke="#52e5d2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M39 16H49V26" stroke="#52e5d2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26" cy="30" r="3" fill="#8ba8ff"/><circle cx="34" cy="35" r="3" fill="#8ba8ff"/></svg></div><div class="eyebrow"><span class="pulse"></span> Your market. Your intelligence.</div><h1>See the market<br><span class="gradient">with a new perspective.</span></h1><p class="sub">A modern workspace for Indian markets, technical charts and smarter research — with AI assistance built into the experience.</p><div class="hero-actions"><button class="btn primary" onclick="document.getElementById('markets').scrollIntoView({behavior:'smooth'})">Explore dashboard ↓</button><button class="btn" onclick="document.getElementById('assistant').scrollIntoView({behavior:'smooth'})">Meet INR AI ✦</button></div></section>
+<section class="grid" id="markets"><div class="card"><div class="cardhead"><div><div class="charttop"><span class="symbol">NIFTY 50</span><span class="tag">NSE · Demo view</span></div><div class="muted" style="font-size:11px;margin-top:6px">Market chart preview · connect a licensed feed for live prices</div></div><span class="tag">15m⌄</span></div><div class="chart"><span class="chartlabel">Illustrative chart · not live data</span><svg viewBox="0 0 800 245" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#52e5d2" stop-opacity=".20"/><stop offset="1" stop-color="#52e5d2" stop-opacity="0"/></linearGradient></defs><path d="M0 183 C28 176 36 190 58 167 S94 171 115 149 S148 162 171 139 S202 147 224 119 S253 134 278 143 S310 116 335 123 S370 97 395 113 S430 130 451 104 S485 110 508 83 S540 100 563 91 S594 111 619 75 S651 90 675 62 S711 77 735 49 S771 62 800 30 L800 245 L0 245Z" fill="url(#area)"/><path d="M0 183 C28 176 36 190 58 167 S94 171 115 149 S148 162 171 139 S202 147 224 119 S253 134 278 143 S310 116 335 123 S370 97 395 113 S430 130 451 104 S485 110 508 83 S540 100 563 91 S594 111 619 75 S651 90 675 62 S711 77 735 49 S771 62 800 30" stroke="#52e5d2" stroke-width="3" fill="none" stroke-linecap="round"/></svg></div><div class="chartfoot"><span>09:15</span><span>11:00</span><span>13:00</span><span>15:30</span></div><div class="stats"><div class="stat"><span>Market status</span><b>Preview</b></div><div class="stat"><span>Chart interval</span><b>15 min</b></div><div class="stat"><span>Data connection</span><b class="muted" style="font-size:13px">Not connected</b></div></div></div>
+<aside class="card"><div class="cardhead"><span class="title">Market watch</span><span class="tag">India</span></div><div class="watchrow"><div class="coin"><div class="coinicon">N</div><div><b>NIFTY 50</b><small>Index · NSE</small></div></div><div class="price">—<small class="muted">Awaiting feed</small></div></div><div class="watchrow"><div class="coin"><div class="coinicon">B</div><div><b>BANK NIFTY</b><small>Index · NSE</small></div></div><div class="price">—<small class="muted">Awaiting feed</small></div></div><div class="watchrow"><div class="coin"><div class="coinicon">S</div><div><b>SENSEX</b><small>Index · BSE</small></div></div><div class="price">—<small class="muted">Awaiting feed</small></div></div><div class="watchrow"><div class="coin"><div class="coinicon">IN</div><div><b>INDIA VIX</b><small>Volatility index</small></div></div><div class="price">—<small class="muted">Awaiting feed</small></div></div><p class="notice">Market prices will appear after a verified, authorized data source is connected.</p></aside></section>
+<section class="featuregrid" id="tools"><div class="card feature"><div class="featureicon">⌁</div><h3>Advanced charts</h3><p>Chart workspace planned for candles, drawing tools, layouts and multiple timeframes.</p></div><div class="card feature"><div class="featureicon">◈</div><h3>Indicators</h3><p>Technical tools such as RSI, MACD, EMA and VWAP, with configurable settings.</p></div><div class="card feature"><div class="featureicon">▦</div><h3>Market screener</h3><p>Explore symbols using filters and market metrics as data becomes available.</p></div><div class="card feature"><div class="featureicon">✧</div><h3>Strategy lab</h3><p>Backtesting and strategy research are planned for a later development phase.</p></div></section>
+<section class="card" id="assistant" style="margin-top:16px"><div class="cardhead"><div class="airow"><div class="aiavatar">AI</div><div><div class="title">INR AI Assistant <span class="tag">Preview</span></div><div class="muted" style="font-size:11px;margin-top:4px">Your compact AI companion inside the workspace</div></div></div><span class="tag">Coming soon</span></div><div class="aihint">Ask about chart concepts, indicators or market terminology. AI-powered market analysis will be enabled after its data and safety connections are configured.</div><div class="aiinput"><input id="question" placeholder="Ask INR AI…" aria-label="Ask INR AI" disabled><button class="btn" disabled>Send</button></div></section>
+<section class="card" id="contact" style="margin-top:16px"><div class="cardhead"><span class="title">Connect with TradingINR</span><span class="tag">Contact</span></div><div class="aihint">For queries and updates, reach us through the contact channel below. Add your preferred public email address before launch.</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn" href="https://wa.me/919549344848" target="_blank" rel="noopener">WhatsApp · +91 95493 44848</a><a class="btn" href="https://t.me/bilinera_scalping_nifty50" target="_blank" rel="noopener">Telegram ↗</a><span class="tag">Email: to be configured</span></div></section>
+<footer class="foot"><span>© 2026 TradingINR · Independent market workspace</span><span>Market data and analysis features require verified connections.</span></footer>
 </div>
-
-<!-- LIVE MARKET -->
-<div style="background:black; padding:10px;">
-<h3>Live Market</h3>
-<p id="nifty">Loading NIFTY...</p>
-<p id="banknifty">Loading BANKNIFTY...</p>
-</div>
-
-<script>
-
-// 🔥 Live Market Data
-async function getData(){
-  let res = await fetch("https://api.allorigins.win/raw?url=https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI,%5ENSEBANK");
-  let data = await res.json();
-
-  let nifty = data.quoteResponse.result[0].regularMarketPrice;
-  let bank = data.quoteResponse.result[1].regularMarketPrice;
-
-  document.getElementById("nifty").innerHTML = "NIFTY: " + nifty;
-  document.getElementById("banknifty").innerHTML = "BANKNIFTY: " + bank;
-}
-
-// 🔥 AI Signal (Real Logic)
-async function generateSignal() {
-
-  let res = await fetch("https://api.allorigins.win/raw?url=https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5ENSEI");
-  let data = await res.json();
-
-  let price = data.quoteResponse.result[0].regularMarketPrice;
-
-  let trend, signal, entry, sl, target;
-
-  // 🔥 Improved Logic (Range + Breakout feel)
-  if (price > 22250) {
-    trend = "UPTREND";
-    signal = "BUY";
-    entry = price;
-    sl = price - 50;
-    target = price + 120;
-  } 
-  else if (price < 22150) {
-    trend = "DOWNTREND";
-    signal = "SELL";
-    entry = price;
-    sl = price + 50;
-    target = price - 120;
-  } 
-  else {
-    trend = "SIDEWAYS";
-    signal = "WAIT";
-  }
-
-  document.getElementById("price").innerText = "Price: " + price;
-  document.getElementById("trend").innerText = "Trend: " + trend;
-
-  let signalElement = document.getElementById("signal");
-  signalElement.innerText = "Signal: " + signal;
-  signalElement.className = signal === "BUY" ? "buy" : signal === "SELL" ? "sell" : "";
-
-  document.getElementById("entry").innerText = entry ? "Entry: " + entry : "";
-  document.getElementById("sl").innerText = sl ? "SL: " + sl : "";
-  document.getElementById("target").innerText = target ? "Target: " + target : "";
-}
-
-// Auto refresh
-setInterval(getData, 5000);
-getData();
-
-</script>
-
-<!-- WhatsApp -->
-<a href="https://wa.me/919549344848" target="_blank" 
-style="position:fixed; bottom:70px; right:20px; background:#25D366; padding:12px; border-radius:50px;">
-WhatsApp
-</a>
-
-<!-- Telegram -->
-<a href="https://t.me/bilinera_scalping_nifty50" target="_blank" 
-style="position:fixed; bottom:20px; right:20px; background:#0088cc; padding:12px; border-radius:50px;">
-Telegram
-</a>
-
-</body>
-</html>
+<script>function showLogin(){alert("Email sign-in will be enabled after authentication is configured.");}</script>
+</body></html>
