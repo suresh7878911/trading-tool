@@ -110,7 +110,7 @@ document.getElementById("dashboard-back").addEventListener("click",()=>{document
  window.renderPreviewIndicators=()=>{old.querySelectorAll("[data-overlay]").forEach(e=>e.remove());const selected=[...document.querySelectorAll(".chart-tool.active")].map(b=>b.dataset.indicator);selected.forEach((name)=>{let vals=name==="EMA"?sma(8):name==="VWAP"?sma(12):name==="RSI"?sma(5).map((v,i)=>v+(i%2?5:-5)):sma(4).map((v,i)=>v+(i%2?3:-3));const p=make("path",{d:vals.map((v,i)=>(i?"L":"M")+(i*step+step/2)+" "+y(v)).join(" "),fill:"none",stroke:name==="EMA"?"#5277d1":name==="VWAP"?"#d6a13b":name==="RSI"?"#9866c7":"#d94e68","stroke-width":1.7,"stroke-dasharray":"4 3","data-overlay":"1"});old.appendChild(p)});};
  window.renderPreviewIndicators();
 })();
-document.querySelectorAll(".chart-tool").forEach(b=>b.addEventListener("click",()=>window.renderPreviewIndicators&&window.renderPreviewIndicators()));
+
 const globalSearch=document.querySelector(".marketsearch input");
 globalSearch.addEventListener("keydown",e=>{if(e.key==="Enter"){const q=globalSearch.value.trim().toLowerCase();const match=Object.entries(sampleRows).flatMap(([cat,rows])=>rows.map(r=>({cat,r}))).find(x=>x.r.join(" ").toLowerCase().includes(q));if(match)openMarketDashboard(match.cat,match.r[0]);else if(q)openMarketDashboard("Stocks","All stocks")}});
 
