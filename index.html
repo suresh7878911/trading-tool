@@ -75,7 +75,7 @@ Exit: Add stop-loss and target rules</textarea>
 (async function(){const status=document.getElementById("fyers-connection-status");if(!status)return;async function refresh(){try{const r=await fetch("/api/fyers/quotes?symbols=nifty,banknifty,finnifty,midcpnifty,niftyit,next50,sensex,vix",{cache:"no-store"});const d=await r.json();if(!r.ok||!d.ok){if(r.status===401)status.textContent="FYERS not connected · Connect your account to view market quotes.";return;}for(const q of d.data||[]){const v=q.v||{},n=q.n||q.symbol||"";const key=String(n).toUpperCase().includes("VIX")?"vix":String(n).toUpperCase().includes("SENSEX")?"sensex":String(n).toUpperCase().includes("MIDCPNIFTY")?"midcpnifty":String(n).toUpperCase().includes("FINNIFTY")?"finnifty":String(n).toUpperCase().includes("NIFTYIT")?"niftyit":String(n).toUpperCase().includes("NXT")?"next50":String(n).toUpperCase().includes("BANK")?"banknifty":"nifty";const price=document.getElementById(key+"-live-price");const change=document.getElementById(key+"-live-change");if(price&&Number.isFinite(Number(v.lp)))price.textContent=Number(v.lp).toLocaleString("en-IN",{maximumFractionDigits:2});if(change){const ch=Number(v.ch),chp=Number(v.chp);change.textContent=(Number.isFinite(ch)?(ch>0?"+":"")+ch.toFixed(2):"")+(Number.isFinite(chp)?" ("+(chp>0?"+":"")+chp.toFixed(2)+"%)":"")+" · FYERS";change.style.color=ch>=0?"#49d6bf":"#ff8d9d";}}status.textContent="FYERS connected · Quote snapshot updated "+new Date(d.receivedAt).toLocaleTimeString("en-IN");}catch(e){status.textContent="Live quote unavailable · Check FYERS connection.";}}await refresh();window.setInterval(refresh,15000);})();
 const categoryOptions={
 "All":["Market Summary","Stocks","Funds","Crypto","Forex","Futures","Bonds","Ideas","Scripts","People","Economy"],
-"Stocks":["All stocks","Top gainers","Top losers","Highest volume","Most active","Large-cap stocks","Mid-cap stocks","Small-cap stocks","New 52-week highs","New 52-week lows"],
+"Stocks":["All stocks","NSE stocks","BSE stocks","Blue-chip stocks","Nifty 50 constituents & weightage","Top gainers","Top losers","Highest volume","Most active","Large-cap stocks","Mid-cap stocks","Small-cap stocks","New 52-week highs","New 52-week lows"],
 "Funds":["All funds","ETFs","Mutual funds","Index funds","Bond funds"],
 "Crypto":["All crypto","Coins","Tokens","Crypto market overview"],
 "Forex":["All forex","Major pairs","Minor pairs","INR pairs"],
@@ -101,7 +101,7 @@ document.querySelectorAll(".market-tab").forEach(tab=>tab.addEventListener("clic
 }));
 document.querySelector(".close-panel").addEventListener("click",()=>categoryPanel.hidden=true);
 const sampleRows={
-"Stocks":[["RELIANCE","Reliance Industries"],["HDFCBANK","HDFC Bank"],["ICICIBANK","ICICI Bank"],["TCS","Tata Consultancy Services"],["INFY","Infosys"],["SBIN","State Bank of India"],["BHARTIARTL","Bharti Airtel"],["ITC","ITC Limited"],["LT","Larsen & Toubro"],["TATAMOTORS","Tata Motors"]],
+"Stocks":[["RELIANCE","Reliance Industries"],["HDFCBANK","HDFC Bank"],["ICICIBANK","ICICI Bank"],["TCS","Tata Consultancy Services"],["INFY","Infosys"],["SBIN","State Bank of India"],["BHARTIARTL","Bharti Airtel"],["ITC","ITC Limited"],["LT","Larsen & Toubro"],["TATAMOTORS","Tata Motors"],["AXISBANK","Axis Bank"],["KOTAKBANK","Kotak Mahindra Bank"],["BAJFINANCE","Bajaj Finance"],["MARUTI","Maruti Suzuki India"],["SUNPHARMA","Sun Pharmaceutical"],["TITAN","Titan Company"],["ASIANPAINT","Asian Paints"],["HINDUNILVR","Hindustan Unilever"],["WIPRO","Wipro"],["HCLTECH","HCL Technologies"],["NTPC","NTPC"],["POWERGRID","Power Grid Corporation"],["ULTRACEMCO","UltraTech Cement"],["ONGC","Oil and Natural Gas Corporation"],["ADANIENT","Adani Enterprises"],["ADANIPORTS","Adani Ports"],["BEL","Bharat Electronics"],["COALINDIA","Coal India"],["TRENT","Trent"],["INDUSINDBK","IndusInd Bank"]],
 "Funds":[["NIFTYBEES","Nippon India ETF Nifty 50"],["BANKBEES","Nippon India ETF Bank BeES"],["GOLDBEES","Nippon India ETF Gold BeES"],["SETFNIF50","SBI ETF Nifty 50"]],
 "Crypto":[["BTC","Bitcoin"],["ETH","Ethereum"],["SOL","Solana"],["XRP","XRP"]],
 "Forex":[["USDINR","US Dollar / Indian Rupee"],["EURINR","Euro / Indian Rupee"],["GBPINR","British Pound / Indian Rupee"],["JPYINR","Japanese Yen / Indian Rupee"]],
@@ -120,15 +120,19 @@ function openMarketDashboard(category,item){
  document.getElementById("dashboard-category").textContent=category;
  document.getElementById("dashboard-title").textContent=item;
  const desc=document.getElementById("dashboard-description");
- desc.textContent=category==="Stocks"?"Explore separate stock lists. Gainers, losers and volume rankings require a connected market feed.": "Explore "+item.toLowerCase()+" across the "+category+" market category.";
+ desc.textContent=category==="Stocks"?(item==="Top gainers"||item==="Top losers"?"Live ranking is not available yet. Connect an authorized market feed to calculate this list from real exchange prices.":item==="Nifty 50 constituents & weightage"?"Constituent coverage preview only. Official index constituent weights must be refreshed from the index provider before being shown as current.":"Stock-universe preview. NSE/BSE complete exchange symbol masters and live quotes are not connected yet."): "Explore "+item.toLowerCase()+" across the "+category+" market category.";
  let rows=sampleRows[category]||[];
  if(category==="All"&&item==="Stocks"){category="Stocks";document.getElementById("dashboard-category").textContent=category;rows=sampleRows.Stocks;}
  if(category==="All"&&item==="Market Summary") rows=[["NIFTY 50","NSE Index"],["SENSEX","BSE Index"],...sampleRows.Stocks.slice(0,5)];
  if(category==="Stocks"){
   const lists={
    "All stocks":sampleRows.Stocks,
-   "Top gainers":[sampleRows.Stocks[1],sampleRows.Stocks[4],sampleRows.Stocks[6],sampleRows.Stocks[8]],
-   "Top losers":[sampleRows.Stocks[2],sampleRows.Stocks[3],sampleRows.Stocks[5],sampleRows.Stocks[9]],
+   "NSE stocks":sampleRows.Stocks,
+   "BSE stocks":sampleRows.Stocks,
+   "Blue-chip stocks":sampleRows.Stocks.slice(0,20),
+   "Nifty 50 constituents & weightage":sampleRows.Stocks.slice(0,20),
+   "Top gainers":[],
+   "Top losers":[],
    "Highest volume":[sampleRows.Stocks[0],sampleRows.Stocks[2],sampleRows.Stocks[5],sampleRows.Stocks[6],sampleRows.Stocks[9]],
    "Most active":sampleRows.Stocks.slice(0,7),
    "Large-cap stocks":sampleRows.Stocks.slice(0,5),
@@ -148,6 +152,7 @@ function openMarketDashboard(category,item){
   b.addEventListener("click",()=>openMarketDashboard("Stocks",label));subnav.appendChild(b);
  });
  const tbody=document.getElementById("dashboard-rows");tbody.replaceChildren();
+ if((item==="Top gainers"||item==="Top losers")&&!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.textContent="Live ranking will appear after an authorized market feed is connected.";tr.appendChild(td);tbody.appendChild(tr);}
  rows.forEach(([symbol,label])=>{const tr=document.createElement("tr");tr.innerHTML='<td><span class="symbol-name"></span><span class="symbol-sub"></span></td><td></td><td>—</td><td>—</td><td><span class="status-chip">Sample preview</span></td>';tr.children[0].querySelector(".symbol-name").textContent=symbol;tr.children[0].querySelector(".symbol-sub").textContent=label;tr.children[1].textContent=category;tbody.appendChild(tr)});
  document.getElementById("dashboard-count").textContent=rows.length?rows.length+" shown":"—";
  document.getElementById("dashboard-result-count").textContent=rows.length+" instruments shown";
