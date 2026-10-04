@@ -9,6 +9,6 @@ module.exports = async function handler(req,res){
  const key=String(req.query.symbol||"nifty").toLowerCase();if(!allowed[key])return res.status(400).json({ok:false,message:"Unsupported underlying"});
  const count=Number.parseInt(req.query.strikecount||"10",10);if(!Number.isInteger(count)||count<1||count>50)return res.status(400).json({ok:false,message:"strikecount must be between 1 and 50"});
  const params=new URLSearchParams({symbol:allowed[key],strikecount:String(count),greeks:"1"});
- const timestamp=String(req.query.timestamp||"");if(timestamp){if(!/^\\d{9,12}$/.test(timestamp))return res.status(400).json({ok:false,message:"Invalid expiry timestamp"});params.set("timestamp",timestamp);}
+ const timestamp=String(req.query.timestamp||"");if(timestamp){if(!/^\d{9,12}$/.test(timestamp))return res.status(400).json({ok:false,message:"Invalid expiry timestamp"});params.set("timestamp",timestamp);}
  try{const upstream=await fetch("https://api-t1.fyers.in/data/options-chain-v3?"+params.toString(),{headers:{Authorization:appId+":"+token,Accept:"application/json"}});const data=await upstream.json();if(!upstream.ok||data.s!=="ok")return res.status(upstream.status||502).json({ok:false,message:"FYERS option-chain request failed",code:data.code});return res.status(200).json({ok:true,source:"FYERS",receivedAt:new Date().toISOString(),data:data.data||{}});}catch(e){return res.status(502).json({ok:false,message:"Unable to reach FYERS option-chain data"});}
 };
