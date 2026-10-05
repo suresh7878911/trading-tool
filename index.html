@@ -284,7 +284,9 @@ const put=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
 let socket=null, retry=0, connecting=false;
 function paint(e,v){if(!e)return;e.style.color=v>0?"#20b26b":v<0?"#e04444":"#8b95a7";}
 function update(row){
- const symbol=String(row.symbol||"").toUpperCase(), key=Object.keys(maps).find(k=>symbol===k||symbol.indexOf(k)>=0);if(!key)return;
+ const symbol=String(row.symbol||"").toUpperCase();
+ if(window.__fyersDashboardTick)window.__fyersDashboardTick(row);
+ const key=Object.keys(maps).find(k=>symbol===k||symbol.indexOf(k)>=0);if(!key)return;
  const ids=maps[key],lp=Number(row.ltp??row.lp),ch=Number(row.ch),chp=Number(row.chp);
  if(Number.isFinite(lp))put(ids[0],fmt(lp));
  const e=document.getElementById(ids[1]);
@@ -336,6 +338,17 @@ async function connect(){
   setTimeout(connect,Math.min(30000,3000+retry++*3000));
  }
 }
+window.__fyersDashboardTick=function(q){
+ const name=String(q.symbol||q.n||"").toUpperCase().replace(/^NSE:|^BSE:/,"").replace(/-EQ$|-[A-Z]+$/,"");
+ const v=q.v||q,lp=Number(v.lp??v.ltp??v.last_price),ch=Number(v.ch??v.change),chp=Number(v.chp??v.change_percent);
+ document.querySelectorAll("#dashboard-rows tr[data-symbol]").forEach(tr=>{
+  if(tr.dataset.symbol!==name)return;
+  const last=tr.querySelector(".live-last"),change=tr.querySelector(".live-change"),chip=tr.querySelector(".status-chip");
+  if(Number.isFinite(lp)&&last)last.textContent=lp.toLocaleString("en-IN",{maximumFractionDigits:2});
+  if(change&&(Number.isFinite(ch)||Number.isFinite(chp))){change.textContent=(Number.isFinite(ch)?(ch>=0?"+":"")+ch.toFixed(2):"—")+(Number.isFinite(chp)?" ("+(chp>=0?"+":"")+chp.toFixed(2)+"%)":"");change.style.color=ch>0?"#20b26b":ch<0?"#e04444":"#8b95a7";}
+  if(Number.isFinite(lp)&&chip){chip.textContent="LIVE · FYERS";chip.style.color="var(--green)";chip.style.background="color-mix(in srgb,var(--green) 10%,var(--panel))";}
+ });
+};
 window.__fyersSubscribe=function(extra){try{if(socket&&socket.readyState===WebSocket.OPEN&&Array.isArray(extra)&&extra.length)socket.send(JSON.stringify({symbol:extra,type:"symbolUpdate"}));}catch(_){}};
 connect();
 })();
