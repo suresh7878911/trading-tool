@@ -215,7 +215,7 @@ document.getElementById("strategy-apply").addEventListener("click",()=>{document
 document.getElementById("strategy-save").addEventListener("click",()=>{try{localStorage.setItem("tradinginr-strategy-draft",document.getElementById("strategy-code").value);document.getElementById("strategy-status").textContent="Draft saved in this browser."; }catch(e){document.getElementById("strategy-status").textContent="Browser storage unavailable.";}});
 
 
-// Sidebar items open a dedicated feature workspace instead of jumping to page sections.
+// Sidebar navigation uses stable English keys, while showing the current translated label.
 (function(){
  const featureMap={
   "Markets & Charts":["Live Market Watch","Advanced Charts","Watchlists","Technical Indicators","Price Alerts"],
@@ -226,47 +226,50 @@ document.getElementById("strategy-save").addEventListener("click",()=>{try{local
   "Strategy Editor":["Strategy Builder","Pine Script Editor","Backtesting","Risk & Reward","Saved Strategies"],
   "INR AI Assistant":["Ask INR AI","Chart Analysis","Option Chain Insights","Market Briefing","Trade Journal"]
  };
+ const navKeys=["Overview",...Object.keys(featureMap),"Contact & Support"];
  const workspace=document.getElementById("workspace-dashboard"),market=document.getElementById("market-dashboard");
- function showWorkspace(label){
-  document.querySelectorAll(".shell>section").forEach(s=>s.hidden=true);
+ const links=[...document.querySelectorAll(".sidebar-nav a")];
+ function currentLabel(key){const link=links[navKeys.indexOf(key)];return link?link.textContent.trim():key;}
+ function showOverview(updateUrl){
+  if(updateUrl){const url=new URL(location.href);url.searchParams.delete("workspace");history.pushState({workspace:null},"",url);}
+  workspace.hidden=true;market.hidden=true;document.querySelectorAll(".shell>section").forEach(section=>section.hidden=false);
+  links.forEach((a,i)=>a.classList.toggle("active",i===0));window.scrollTo({top:0,behavior:"smooth"});
+ }
+ function showWorkspace(key,scroll=true){
+  if(!featureMap[key])return;
+  const label=currentLabel(key);
+  document.querySelectorAll(".shell>section").forEach(section=>section.hidden=true);
   market.hidden=true;workspace.hidden=false;
-  document.querySelectorAll(".sidebar-nav a").forEach(a=>a.classList.toggle("active",a.textContent.trim()===label));
+  links.forEach((a,i)=>a.classList.toggle("active",navKeys[i]===key));
   document.getElementById("workspace-title").textContent=label;
   document.getElementById("workspace-breadcrumb").textContent=label;
   document.getElementById("workspace-description").textContent="A dedicated workspace for "+label.toLowerCase()+". Select a feature below to explore its tools and data.";
-  const names=featureMap[label]||["Overview","Data Explorer","Analysis","Reports"];
-  const holder=document.getElementById("workspace-features");holder.replaceChildren();
+  const names=featureMap[key],holder=document.getElementById("workspace-features");holder.replaceChildren();
   names.forEach((name,index)=>{
-   const card=document.createElement("button");card.type="button";card.className="card";card.style.cssText="text-align:left;cursor:pointer;color:var(--text);min-height:112px;transition:transform .15s,border-color .15s";
+   const card=document.createElement("button");card.type="button";card.className="card";card.setAttribute("aria-pressed","false");card.style.cssText="text-align:left;cursor:pointer;color:var(--text);min-height:112px;transition:transform .15s,border-color .15s";
    const icon=document.createElement("div");icon.className="featureicon";icon.textContent=["▦","⌁","◈","↗","✦"][index%5];
    const title=document.createElement("h3");title.textContent=name;title.style.margin="0 0 7px";
-   const desc=document.createElement("p");desc.className="muted";desc.textContent="Open "+name.toLowerCase()+" tools and view the available workspace.";
+   const desc=document.createElement("p");desc.className="muted";desc.textContent="View "+name.toLowerCase()+" workspace and available controls.";
    card.append(icon,title,desc);card.addEventListener("click",()=>{
-    holder.querySelectorAll("button").forEach(b=>{b.style.borderColor="var(--line)";b.style.background="var(--panel)"});
-    card.style.borderColor="var(--cyan)";card.style.background="color-mix(in srgb,var(--cyan) 7%,var(--panel))";
+    holder.querySelectorAll("button").forEach(b=>{b.style.borderColor="var(--line)";b.style.background="var(--panel)";b.setAttribute("aria-pressed","false")});
+    card.style.borderColor="var(--cyan)";card.style.background="color-mix(in srgb,var(--cyan) 7%,var(--panel))";card.setAttribute("aria-pressed","true");
     document.getElementById("workspace-feature-title").textContent=name;
-    document.getElementById("workspace-feature-description").textContent=name+" workspace selected. Data and controls will appear here when the related feed or feature is enabled. Demo content will not be presented as live market data.";
+    document.getElementById("workspace-feature-description").textContent=name+" is selected. Its dedicated controls and verified data connection are the next implementation step; no demo values are shown as live market data.";
    });holder.appendChild(card);
   });
   document.getElementById("workspace-feature-title").textContent="Select a feature";
-  document.getElementById("workspace-feature-description").textContent="Choose one of the feature cards above to open its workspace.";
-  window.scrollTo({top:0,behavior:"smooth"});
+  document.getElementById("workspace-feature-description").textContent="Choose a feature card above to view its workspace status.";
+  if(scroll)window.scrollTo({top:0,behavior:"smooth"});
  }
- document.querySelectorAll(".sidebar-nav a").forEach(a=>a.addEventListener("click",e=>{
-  const label=a.textContent.trim();
-  if(label==="Overview"){e.preventDefault();workspace.hidden=true;market.hidden=true;document.querySelectorAll(".shell>section").forEach(s=>s.hidden=false);document.querySelectorAll(".sidebar-nav a").forEach(x=>x.classList.toggle("active",x===a));window.scrollTo({top:0,behavior:"smooth"});return;}
-  if(featureMap[label]){e.preventDefault();const url=new URL(window.location.href);url.searchParams.set("workspace",label);history.pushState({workspace:label},"",url);showWorkspace(label);}
+ links.forEach((a,index)=>a.addEventListener("click",e=>{
+  const key=navKeys[index];
+  if(key==="Overview"){e.preventDefault();showOverview(true);return;}
+  if(featureMap[key]){e.preventDefault();const url=new URL(location.href);url.searchParams.set("workspace",key);history.pushState({workspace:key},"",url);showWorkspace(key);}
  }));
- const requested=new URLSearchParams(window.location.search).get("workspace");if(requested&&featureMap[requested])showWorkspace(requested);
- window.addEventListener("popstate",()=>{const current=new URLSearchParams(window.location.search).get("workspace");if(current&&featureMap[current])showWorkspace(current);else{workspace.hidden=true;market.hidden=true;document.querySelectorAll(".shell>section").forEach(s=>s.hidden=false);}});
- document.getElementById("workspace-back").addEventListener("click",()=>{
-  const url=new URL(window.location.href);url.searchParams.delete("workspace");history.pushState({workspace:null},"",url);
-  workspace.hidden=true;market.hidden=true;document.querySelectorAll(".shell>section").forEach(s=>s.hidden=false);
-  document.querySelectorAll(".sidebar-nav a").forEach(a=>a.classList.toggle("active",a.textContent.trim()==="Overview"));
-  window.scrollTo({top:0,behavior:"smooth"});
- });
+ const requested=new URLSearchParams(location.search).get("workspace");if(requested&&featureMap[requested])showWorkspace(requested,false);
+ window.addEventListener("popstate",()=>{const key=new URLSearchParams(location.search).get("workspace");if(key&&featureMap[key])showWorkspace(key,false);else showOverview(false);});
+ document.getElementById("workspace-back").addEventListener("click",()=>showOverview(true));
 })();
-
 const globalSearch=document.querySelector(".marketsearch input");
 globalSearch.addEventListener("keydown",e=>{if(e.key==="Enter"){const q=globalSearch.value.trim().toLowerCase();const match=Object.entries(sampleRows).flatMap(([cat,rows])=>rows.map(r=>({cat,r}))).find(x=>x.r.join(" ").toLowerCase().includes(q));if(match)openMarketDashboard(match.cat,match.r[0]);else if(q)openMarketDashboard("Stocks","All stocks")}});
 
