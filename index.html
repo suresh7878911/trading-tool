@@ -255,8 +255,9 @@ document.getElementById("strategy-save").addEventListener("click",()=>{try{local
  document.querySelectorAll(".sidebar-nav a").forEach(a=>a.addEventListener("click",e=>{
   const label=a.textContent.trim();
   if(label==="Overview"){e.preventDefault();workspace.hidden=true;market.hidden=true;document.querySelectorAll(".shell>section").forEach(s=>s.hidden=false);document.querySelectorAll(".sidebar-nav a").forEach(x=>x.classList.toggle("active",x===a));window.scrollTo({top:0,behavior:"smooth"});return;}
-  if(featureMap[label]){e.preventDefault();showWorkspace(label);}
+  if(featureMap[label]){e.preventDefault();const url=new URL(window.location.href);url.searchParams.set("workspace",label);window.open(url.toString(),"_blank","noopener");}
  }));
+ const requested=new URLSearchParams(window.location.search).get("workspace");if(requested&&featureMap[requested])showWorkspace(requested);
  document.getElementById("workspace-back").addEventListener("click",()=>{
   workspace.hidden=true;market.hidden=true;document.querySelectorAll(".shell>section").forEach(s=>s.hidden=false);
   document.querySelectorAll(".sidebar-nav a").forEach(a=>a.classList.toggle("active",a.textContent.trim()==="Overview"));
