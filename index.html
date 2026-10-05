@@ -271,6 +271,7 @@ window.__fyersSubscribe=subscribe;
 function update(row){
  const symbol=String(row.symbol||"").toUpperCase();
  if(window.__fyersDashboardTick)window.__fyersDashboardTick(row);
+ if(window.__fyersIndexTick)window.__fyersIndexTick(row);
  const key=Object.keys(maps).find(k=>symbol===k||symbol.indexOf(k)>=0);if(!key){updateDashboardRow(row);return;}
  updateDashboardRow(row);
  const ids=maps[key],lp=Number(row.ltp??row.lp),ch=Number(row.ch),chp=Number(row.chp);
