@@ -153,30 +153,23 @@ function openMarketDashboard(category,item){
  document.getElementById("dashboard-category").textContent=category;
  document.getElementById("dashboard-title").textContent=item;
  const desc=document.getElementById("dashboard-description");
- desc.textContent=category==="Stocks"?(item==="Top gainers"||item==="Top losers"?"Live ranking is not available yet. Connect an authorized market feed to calculate this list from real exchange prices.":item==="Nifty 50 constituents & weightage"?"Constituent coverage preview only. Official index constituent weights must be refreshed from the index provider before being shown as current.":"Stock-universe preview. NSE/BSE complete exchange symbol masters and live quotes are not connected yet."): "Explore "+item.toLowerCase()+" across the "+category+" market category.";
+ desc.textContent=category==="Stocks"?"Live NSE quotes appear here after FYERS authorization. Rankings are calculated only from the instruments currently covered by this dashboard.":"Explore "+item.toLowerCase()+" across the "+category+" market category.";
  let rows=sampleRows[category]||[];
  if(category==="All"&&item==="Stocks"){category="Stocks";document.getElementById("dashboard-category").textContent=category;rows=sampleRows.Stocks;}
  if(category==="All"&&item==="Market Summary") rows=[["NIFTY 50","NSE Index"],["SENSEX","BSE Index"],...sampleRows.Stocks.slice(0,5)];
  if(category==="Stocks"){
   const lists={
-   "All stocks":sampleRows.Stocks,
-   "NSE stocks":sampleRows.Stocks,
-   "BSE stocks":sampleRows.Stocks,
-   "Blue-chip stocks":sampleRows.Stocks.slice(0,20),
-   "Nifty 50 constituents & weightage":sampleRows.Stocks.slice(0,20),
-   "Top gainers":[],
-   "Top losers":[],
+   "All stocks":sampleRows.Stocks,"NSE stocks":sampleRows.Stocks,"BSE stocks":sampleRows.Stocks,
+   "Blue-chip stocks":sampleRows.Stocks.slice(0,20),"Nifty 50 constituents & weightage":sampleRows.Stocks.slice(0,20),
+   "Top gainers":sampleRows.Stocks,"Top losers":sampleRows.Stocks,
    "Highest volume":[sampleRows.Stocks[0],sampleRows.Stocks[2],sampleRows.Stocks[5],sampleRows.Stocks[6],sampleRows.Stocks[9]],
-   "Most active":sampleRows.Stocks.slice(0,7),
-   "Large-cap stocks":sampleRows.Stocks.slice(0,5),
-   "Mid-cap stocks":sampleRows.Stocks.slice(3,8),
-   "Small-cap stocks":sampleRows.Stocks.slice(5,10),
-   "New 52-week highs":sampleRows.Stocks.slice(0,4),
-   "New 52-week lows":sampleRows.Stocks.slice(4,8)
+   "Most active":sampleRows.Stocks.slice(0,7),"Large-cap stocks":sampleRows.Stocks.slice(0,5),
+   "Mid-cap stocks":sampleRows.Stocks.slice(3,8),"Small-cap stocks":sampleRows.Stocks.slice(5,10),
+   "New 52-week highs":sampleRows.Stocks.slice(0,4),"New 52-week lows":sampleRows.Stocks.slice(4,8)
   };
   rows=lists[item]||sampleRows.Stocks;
  }
- if(item==="All"||item==="Market Summary") rows=[["NIFTY 50","NSE Index"],["SENSEX","BSE Index"],...(sampleRows.Stocks.slice(0,5))];
+ if(item==="All"||item==="Market Summary") rows=[["NIFTY 50","NSE Index"],["SENSEX","BSE Index"],...sampleRows.Stocks.slice(0,5)];
  const subnav=document.getElementById("stock-subnav");
  subnav.replaceChildren();subnav.hidden=category!=="Stocks";
  if(category==="Stocks") ["All stocks","Top gainers","Top losers","Highest volume","Most active"].forEach(label=>{
@@ -185,16 +178,51 @@ function openMarketDashboard(category,item){
   b.addEventListener("click",()=>openMarketDashboard("Stocks",label));subnav.appendChild(b);
  });
  const tbody=document.getElementById("dashboard-rows");tbody.replaceChildren();
- if((item==="Top gainers"||item==="Top losers")&&!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.textContent="Live ranking will appear after an authorized market feed is connected.";tr.appendChild(td);tbody.appendChild(tr);}
- rows.forEach(([symbol,label])=>{const tr=document.createElement("tr");tr.innerHTML='<td><span class="symbol-name"></span><span class="symbol-sub"></span></td><td></td><td>—</td><td>—</td><td><span class="status-chip">Demo data</span></td>';tr.children[0].querySelector(".symbol-name").textContent=symbol;tr.children[0].querySelector(".symbol-sub").textContent=label;tr.children[1].textContent=category;tbody.appendChild(tr)});
+ rows.forEach(([symbol,label])=>{
+  const tr=document.createElement("tr");tr.dataset.symbol=symbol;
+  tr.innerHTML='<td><span class="symbol-name"></span><span class="symbol-sub"></span></td><td></td><td class="live-last">—</td><td class="live-change">—</td><td><span class="status-chip">Waiting for FYERS</span></td>';
+  tr.children[0].querySelector(".symbol-name").textContent=symbol;tr.children[0].querySelector(".symbol-sub").textContent=label;
+  tr.children[1].textContent=category;tbody.appendChild(tr);
+ });
  document.getElementById("dashboard-count").textContent=rows.length?rows.length+" shown":"—";
  document.getElementById("dashboard-result-count").textContent=rows.length+" instruments shown";
  document.getElementById("dashboard-search").value="";
  document.getElementById("dashboard-search").oninput=e=>{const q=e.target.value.toLowerCase();let visible=0;[...tbody.rows].forEach(tr=>{const show=tr.textContent.toLowerCase().includes(q);tr.hidden=!show;if(show)visible++});document.getElementById("dashboard-result-count").textContent=visible+" instruments shown"};
+ window.__fyersDashboardSymbols=rows.map(r=>r[0]).filter(s=>/^[A-Z0-9]+$/.test(s)).join(",");
+ window.__fyersDashboardCategory=category;
+ if(window.__refreshFyersDashboard)window.__refreshFyersDashboard();
  window.scrollTo({top:0,behavior:"smooth"});
 }
-document.getElementById("dashboard-back").addEventListener("click",()=>{document.getElementById("market-dashboard").hidden=true;document.querySelectorAll(".shell>section").forEach(s=>s.hidden=false);window.scrollTo({top:0,behavior:"smooth"})});
-\n
+document.getElementById("dashboard-back").addEventListener("click",()=>{document.getElementById("market-dashboard").hidden=true;document.querySelectorAll(".shell>section").forEach(s=>s.hidden=false);window.__fyersDashboardSymbols="";window.scrollTo({top:0,behavior:"smooth"})});
+
+
+// Live dashboard quote updater. It uses the same server-side FYERS session as the market overview.
+(function(){
+ async function refresh(){
+  const symbols=window.__fyersDashboardSymbols;
+  if(!symbols)return;
+  try{
+   const r=await fetch("/api/fyers/quotes?symbols="+encodeURIComponent(symbols),{cache:"no-store"});
+   const d=await r.json();
+   const by={};
+   for(const q of d.data||[]){const name=String(q.n||q.symbol||"").toUpperCase();const key=name.replace(/^NSE:|^BSE:/,"").replace(/-EQ$|-[A-Z]+$/,"");by[key]=q.v||{};}
+   document.querySelectorAll("#dashboard-rows tr[data-symbol]").forEach(tr=>{
+    const v=by[tr.dataset.symbol]||{};
+    const lp=Number(v.lp),ch=Number(v.ch),chp=Number(v.chp);
+    const last=tr.querySelector(".live-last"),change=tr.querySelector(".live-change"),chip=tr.querySelector(".status-chip");
+    if(Number.isFinite(lp))last.textContent=lp.toLocaleString("en-IN",{maximumFractionDigits:2});
+    if(Number.isFinite(ch)||Number.isFinite(chp))change.textContent=(Number.isFinite(ch)?(ch>=0?"+":"")+ch.toFixed(2):"—")+(Number.isFinite(chp)?" ("+(chp>=0?"+":"")+chp.toFixed(2)+"%)":"");
+    if(Number.isFinite(lp)){chip.textContent="LIVE · FYERS";chip.style.color="var(--green)";chip.style.background="color-mix(in srgb,var(--green) 10%,var(--panel))";}
+   });
+   const liveCount=[...document.querySelectorAll("#dashboard-rows tr[data-symbol] .status-chip")].filter(x=>x.textContent.includes("LIVE")).length;
+   const tag=document.querySelector("#market-dashboard .dashboard-heading .tag");if(tag)tag.textContent=liveCount?"LIVE · FYERS":"Waiting for FYERS";
+   const status=document.querySelector("#market-dashboard .dashboard-metrics .stat:nth-child(3) b");if(status)status.textContent=liveCount?liveCount+" live":"Not connected";
+  }catch(e){}
+ }
+ window.__refreshFyersDashboard=refresh;
+ setInterval(refresh,15000);
+})();
+
 /* TradingINR chart preview renderer: deterministic sample OHLC, not exchange data */
 (function(){
  const chart=document.querySelector(".chart"),svg=chart&&chart.querySelector("svg");if(!svg)return;
