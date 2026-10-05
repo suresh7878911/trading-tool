@@ -364,34 +364,68 @@ document.querySelectorAll(".timeframe").forEach(button=>button.addEventListener(
 (function(){const root=document.documentElement,lang=document.getElementById('language-switch');const translations={en:{overview:'Overview',markets:'Markets & Charts',summary:'Market Summary',ipo:'IPO Tracker',ideas:'Ideas & Community',tools:'Trading Tools',strategy:'Strategy Editor',assistant:'INR AI Assistant',support:'Contact & Support',contact:'Contact',signin:'Sign in',hero:'AI-powered market intelligence',heroSub:'Research, charts and market tools in one place.',academy:'Academy ↗',mobile:'Mobile App ↗'},hi:{overview:'अवलोकन',markets:'मार्केट और चार्ट',summary:'मार्केट सारांश',ipo:'IPO ट्रैकर',ideas:'आइडिया और कम्युनिटी',tools:'ट्रेडिंग टूल्स',strategy:'स्ट्रेटेजी एडिटर',assistant:'INR AI असिस्टेंट',support:'संपर्क और सहायता',contact:'संपर्क',signin:'साइन इन',hero:'AI-संचालित मार्केट इंटेलिजेंस',heroSub:'रिसर्च, चार्ट और मार्केट टूल्स—एक ही जगह।',academy:'अकादमी ↗',mobile:'मोबाइल ऐप ↗'}};function setLanguage(v){const t=translations[v]||translations.en;const links=document.querySelectorAll('.sidebar-nav a');const keys=['overview','markets','summary','ipo','ideas','tools','strategy','assistant','support'];links.forEach((a,i)=>{if(keys[i]){const span=a.querySelector('span');a.textContent=t[keys[i]];if(span){a.prepend(span)}}});const nav=document.querySelectorAll('.top .nav a');if(nav[3])nav[3].textContent=t.academy;if(nav[4])nav[4].textContent=t.mobile;const contact=document.querySelector('.actions button.btn:not(.primary)');if(contact)contact.textContent=t.contact;const sign=document.querySelector('[data-ui="signin"]');if(sign)sign.textContent=t.signin;const eyebrow=document.querySelector('.hero .eyebrow');if(eyebrow)eyebrow.textContent=t.hero;const sub=document.querySelector('.hero .sub');if(sub)sub.textContent=t.heroSub;root.lang=v;try{localStorage.setItem('tradinginr-language',v)}catch(e){}}function setTheme(v){root.dataset.theme=v;document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===v));try{localStorage.setItem('tradinginr-theme',v)}catch(e){}}lang.addEventListener('change',()=>setLanguage(lang.value));document.querySelectorAll('[data-theme-choice]').forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.themeChoice)));let l='en',th='aurora';try{l=localStorage.getItem('tradinginr-language')||'en';th=localStorage.getItem('tradinginr-theme')||'aurora'}catch(e){}lang.value=l;setLanguage(l);setTheme(th)})();
 
 (()=>{const btn=document.getElementById("oc-load");if(!btn)return;const $=id=>document.getElementById(id),fmt=v=>v===undefined||v===null||v===""||!Number.isFinite(Number(v))?"—":Number(v).toLocaleString("en-IN",{maximumFractionDigits:2}),cell=v=>"<td>"+fmt(v)+"</td>";btn.addEventListener("click",async()=>{btn.disabled=true;$("oc-status").textContent="Loading…";$("oc-note").textContent="Requesting authorized FYERS option-chain data.";try{const u=$("oc-underlying").value,n=$("oc-count").value,ts=$("oc-expiry-select").value,query="/api/fyers/options-chain?symbol="+encodeURIComponent(u)+"&strikecount="+encodeURIComponent(n)+(ts?"&timestamp="+encodeURIComponent(ts):""),r=await fetch(query,{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"Request failed");const d=j.data||{},chain=d.optionsChain||d.options_chain||[];if(!Array.isArray(chain)||!chain.length)throw Error("FYERS returned no option-chain rows.");const grouped={},spotRow=chain.find(x=>!String(x.option_type??x.optionType??"").trim());for(const x of chain){const strike=Number(x.strike_price??x.strikePrice??x.strike),type=String(x.option_type??x.optionType??"").toUpperCase(),side=type==="CE"||type==="CALL"?"ce":type==="PE"||type==="PUT"?"pe":"";if(!Number.isFinite(strike)||strike<0||!side)continue;grouped[strike]??={strike};grouped[strike][side]=x;}const rows=Object.values(grouped).sort((a,b)=>a.strike-b.strike);const sum=(side,key)=>rows.reduce((n,x)=>n+Math.max(0,Number((x[side]||{})[key])||0),0),ceOi=sum("ce","oi"),peOi=sum("pe","oi"),ceChg=rows.reduce((n,x)=>n+(Number(x.ce?.oich??x.ce?.oi_change??x.ce?.oiChange)||0),0),peChg=rows.reduce((n,x)=>n+(Number(x.pe?.oich??x.pe?.oi_change??x.pe?.oiChange)||0),0),ceWall=rows.reduce((best,x)=>Number(x.ce?.oi)>Number(best?.ce?.oi??-1)?x:best,null),peWall=rows.reduce((best,x)=>Number(x.pe?.oi)>Number(best?.pe?.oi??-1)?x:best,null),spot=Number(spotRow?.ltp??spotRow?.fp),atm=Number.isFinite(spot)&&rows.length?rows.reduce((best,x)=>Math.abs(x.strike-spot)<Math.abs(best.strike-spot)?x:best,rows[0]):null,maxPain=rows.length?rows.reduce((best,k)=>{let loss=0;for(const q of rows){const ce=Number(q.ce?.oi)||0,pe=Number(q.pe?.oi)||0;loss+=Math.max(0,k.strike-q.strike)*pe+Math.max(0,q.strike-k.strike)*ce;}return !best||loss<best.loss?{strike:k.strike,loss}:best},null):null;$("oc-ce-total").textContent=fmt(ceOi);$("oc-pe-total").textContent=fmt(peOi);$("oc-oichange").textContent=fmt(ceChg)+" / "+fmt(peChg);$("oc-ce-wall").textContent=ceWall?fmt(ceWall.strike)+" · "+fmt(ceWall.ce?.oi):"—";$("oc-pe-wall").textContent=peWall?fmt(peWall.strike)+" · "+fmt(peWall.pe?.oi):"—";$("oc-atm").textContent=atm?fmt(atm.strike):"—";$("oc-maxpain").textContent=maxPain?fmt(maxPain.strike):"—";$("oc-rows").replaceChildren();rows.forEach(x=>{const ce=x.ce||{},pe=x.pe||{},cg=ce.greeks||{},pg=pe.greeks||{},tr=document.createElement("tr"),vals=[ce.oi,ce.oich,cg.delta,cg.gamma,cg.iv,ce.volume,ce.ltp,x.strike,pe.ltp,pe.volume,pg.iv,pg.gamma,pg.delta,pe.oich,pe.oi];vals.forEach(v=>{const td=document.createElement("td");td.textContent=fmt(v);tr.appendChild(td)});$("oc-rows").appendChild(tr)});$("oc-spot").textContent=fmt(spotRow?.ltp??spotRow?.fp);$("oc-pcr").textContent=ceOi>0?fmt(peOi/ceOi):"—";const expiries=Array.isArray(d.expiryData)?d.expiryData:[],expirySelect=$("oc-expiry-select"),selected=expirySelect.value;expirySelect.replaceChildren();const nearest=document.createElement("option");nearest.value="";nearest.textContent="Nearest available";expirySelect.appendChild(nearest);expiries.forEach(e=>{const value=String(e.expiry??"");if(!/^\d{9,12}$/.test(value))return;const opt=document.createElement("option");opt.value=value;opt.textContent=String(e.date||e.expiryDate||value);expirySelect.appendChild(opt)});if(selected&&[...expirySelect.options].some(o=>o.value===selected))expirySelect.value=selected;else expirySelect.value="";const exp=expiries.find(e=>String(e.expiry??"")===expirySelect.value)||expiries[0];$("oc-expiry").textContent=exp?(exp.date||exp.expiryDate||exp.expiry||"Available"):"—";$("oc-status").textContent="Updated "+new Date(j.receivedAt||Date.now()).toLocaleTimeString("en-IN");const flow=document.getElementById("option-flow-state");if(flow)flow.textContent="Linked · Option Chain";const badge=document.getElementById("terminal-feed-badge");if(badge)badge.textContent="LIVE FEED: FYERS AUTHORIZED";$("oc-note").textContent="Source: FYERS · "+rows.length+" strike rows · OI change and Greeks appear when supplied by FYERS. PCR = total PE OI / total CE OI."; }catch(e){$("oc-status").textContent="Data unavailable";const flow=document.getElementById("option-flow-state");if(flow)flow.textContent="Not linked";const badge=document.getElementById("terminal-feed-badge");if(badge)badge.textContent="LIVE FEED: CONNECTION REQUIRED";$("oc-rows").replaceChildren();const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=13;td.textContent=String(e.message||"Unable to load chain");tr.appendChild(td);$("oc-rows").appendChild(tr);$("oc-note").textContent="Check that FYERS is connected and the market-data entitlement is active.";}finally{btn.disabled=false;if($("oc-status").textContent.startsWith("Updated")&&!btn.dataset.autoRefresh){btn.dataset.autoRefresh="1";window.setInterval(()=>{if(!btn.disabled)btn.click()},60000);}}});})();
-</script><script id="TRADINGINR_LIVE_MARKET_V2">
+</script><script id="TRADINGINR_LIVE_MARKET_V3">
 (function(){
-const symbols="nifty,banknifty,vix,finnifty,midcpnifty,niftyit,next50,sensex";
-const cards={n:["nifty-live-price","nifty-live-change"],banknifty:["banknifty-live-price","banknifty-live-change"],vix:["vix-live-price","vix-live-change"],finnifty:["finnifty-live-price","finnifty-live-change"],midcpnifty:["midcpnifty-live-price","midcpnifty-live-change"],niftyit:["niftyit-live-price","niftyit-live-change"],next50:["next50-live-price","next50-live-change"],sensex:["sensex-live-price","sensex-live-change"]};
-const maps={n:"NIFTY50-INDEX",banknifty:"NIFTYBANK-INDEX",vix:"INDIAVIX-INDEX",finnifty:"FINNIFTY-INDEX",midcpnifty:"MIDCPNIFTY-INDEX",niftyit:"NIFTYIT-INDEX",next50:"NIFTYNXT50-INDEX",sensex:"SENSEX-INDEX"};
+const symbols=["NSE:NIFTY50-INDEX","NSE:NIFTYBANK-INDEX","NSE:INDIAVIX-INDEX","NSE:FINNIFTY-INDEX","NSE:MIDCPNIFTY-INDEX","NSE:NIFTYIT-INDEX","NSE:NIFTYNXT50-INDEX","BSE:SENSEX-INDEX"];
+const maps={"NSE:NIFTY50-INDEX":["nifty-live-price","nifty-live-change"],"NSE:NIFTYBANK-INDEX":["banknifty-live-price","banknifty-live-change"],"NSE:INDIAVIX-INDEX":["vix-live-price","vix-live-change"],"NSE:FINNIFTY-INDEX":["finnifty-live-price","finnifty-live-change"],"NSE:MIDCPNIFTY-INDEX":["midcpnifty-live-price","midcpnifty-live-change"],"NSE:NIFTYIT-INDEX":["niftyit-live-price","niftyit-live-change"],"NSE:NIFTYNXT50-INDEX":["next50-live-price","next50-live-change"],"BSE:SENSEX-INDEX":["sensex-live-price","sensex-live-change"]};
 const fmt=v=>Number.isFinite(Number(v))?Number(v).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";
 const put=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
-async function refresh(){
- try{
-  const sr=await fetch("/api/fyers/status?validate=1",{cache:"no-store"}),sj=await sr.json();
-  const box=document.getElementById("fyers-connection-status"),badge=document.getElementById("terminal-feed-badge");
-  if(!sj.connected||!sj.validated){if(box)box.textContent=sj.message||"FYERS not connected";if(badge)badge.textContent="LIVE FEED: CONNECTION REQUIRED";return}
-  if(box)box.textContent="Connected · Live market quotes updating automatically.";
-  if(badge)badge.textContent="LIVE FEED: FYERS AUTHORIZED";
-  const oc=document.getElementById("oc-load");if(oc&&!oc.dataset.autoStarted){oc.dataset.autoStarted="1";oc.click();}
-  const qr=await fetch("/api/fyers/quotes?symbols="+encodeURIComponent(symbols),{cache:"no-store"});
-  if(!qr.ok)return;
-  const q=await qr.json(),rows=Array.isArray(q.data)?q.data:[];
-  rows.forEach(row=>{
-   const name=String(row.n||row.symbol||"").toUpperCase(),key=Object.keys(maps).find(k=>name.indexOf(maps[k])>=0);if(!key)return;
-   const v=row.v||row.value||row,lp=v.lp??v.ltp??v.last_price,ch=v.ch??v.change,chp=v.chp??v.change_percent;
-   if(lp!==undefined)put(cards[key][0],fmt(lp));
-   if(ch!==undefined||chp!==undefined){const a=Number(ch),b=Number(chp);put(cards[key][1],(Number.isFinite(a)?(a>=0?"+":"")+fmt(a):"—")+(Number.isFinite(b)?" ("+(b>=0?"+":"")+fmt(b)+"%)":""))}
-   else put(cards[key][1],"Live · "+new Date().toLocaleTimeString("en-IN"));
-  });
- }catch(e){}
+let socket=null, retry=0, connecting=false;
+function paint(e,v){if(!e)return;e.style.color=v>0?"#20b26b":v<0?"#e04444":"#8b95a7";}
+function update(row){
+ const symbol=String(row.symbol||"").toUpperCase(), key=Object.keys(maps).find(k=>symbol===k||symbol.indexOf(k)>=0);if(!key)return;
+ const ids=maps[key],lp=Number(row.ltp??row.lp),ch=Number(row.ch),chp=Number(row.chp);
+ if(Number.isFinite(lp))put(ids[0],fmt(lp));
+ const e=document.getElementById(ids[1]);
+ if(e){
+   e.textContent=(Number.isFinite(ch)?(ch>=0?"+":"")+fmt(ch):"—")+(Number.isFinite(chp)?" ("+(chp>=0?"+":"")+fmt(chp)+"%)":"")+" · LIVE";
+   paint(e,ch);
+ }
+ const badge=document.getElementById("terminal-feed-badge"),box=document.getElementById("fyers-connection-status");
+ if(badge)badge.textContent="LIVE FEED: FYERS WEBSOCKET";
+ if(box)box.textContent="Connected · Tick-by-tick FYERS live feed";
 }
-refresh();window.setInterval(refresh,5000);
+async function connect(){
+ if(connecting||socket&&[WebSocket.OPEN,WebSocket.CONNECTING].includes(socket.readyState))return;
+ connecting=true;
+ try{
+  const r=await fetch("/api/fyers/stream-token",{cache:"no-store"});
+  if(!r.ok)throw new Error("session");
+  const d=await r.json();if(!d.accessToken)throw new Error("token");
+  socket=new WebSocket("wss://api.fyers.in/socket/v2/data/");
+  socket.onopen=()=>{
+   retry=0;connecting=false;
+   const box=document.getElementById("fyers-connection-status"),badge=document.getElementById("terminal-feed-badge");
+   if(box)box.textContent="Connected · FYERS WebSocket live feed";
+   if(badge)badge.textContent="LIVE FEED: FYERS WEBSOCKET";
+   socket.send(JSON.stringify({type:"authorization",data:d.accessToken}));
+   socket.send(JSON.stringify({symbol:symbols,type:"symbolUpdate"}));
+  };
+  socket.onmessage=e=>{
+   try{
+    const m=JSON.parse(e.data);
+    if(m&&m.symbol)update(m);
+    else if(Array.isArray(m))m.forEach(update);
+   }catch(_){}
+  };
+  socket.onerror=()=>{try{socket.close()}catch(_){}};
+  socket.onclose=()=>{
+   connecting=false;
+   const box=document.getElementById("fyers-connection-status"),badge=document.getElementById("terminal-feed-badge");
+   if(box)box.textContent="Reconnecting · FYERS live feed";
+   if(badge)badge.textContent="LIVE FEED: RECONNECTING";
+   const delay=Math.min(30000,Math.max(1500,1000*Math.pow(2,retry++)));
+   setTimeout(connect,delay);
+  };
+ }catch(e){
+  connecting=false;
+  const box=document.getElementById("fyers-connection-status"),badge=document.getElementById("terminal-feed-badge");
+  if(box)box.textContent="FYERS session required · Connect account";
+  if(badge)badge.textContent="LIVE FEED: CONNECTION REQUIRED";
+  setTimeout(connect,Math.min(30000,3000+retry++*3000));
+ }
+}
+connect();
 })();
 </script>
 <script id="TRADINGINR_LIVE_HISTORY_V1">
