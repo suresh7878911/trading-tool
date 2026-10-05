@@ -186,7 +186,7 @@ function openMarketDashboard(category,item){
  });
  const tbody=document.getElementById("dashboard-rows");tbody.replaceChildren();
  if((item==="Top gainers"||item==="Top losers")&&!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.textContent="Live ranking will appear after an authorized market feed is connected.";tr.appendChild(td);tbody.appendChild(tr);}
- rows.forEach(([symbol,label])=>{const tr=document.createElement("tr");tr.innerHTML='<td><span class="symbol-name"></span><span class="symbol-sub"></span></td><td></td><td>—</td><td>—</td><td><span class="status-chip">Sample preview</span></td>';tr.children[0].querySelector(".symbol-name").textContent=symbol;tr.children[0].querySelector(".symbol-sub").textContent=label;tr.children[1].textContent=category;tbody.appendChild(tr)});
+ rows.forEach(([symbol,label])=>{const tr=document.createElement("tr");tr.innerHTML='<td><span class="symbol-name"></span><span class="symbol-sub"></span></td><td></td><td>—</td><td>—</td><td><span class="status-chip">Demo data</span></td>';tr.children[0].querySelector(".symbol-name").textContent=symbol;tr.children[0].querySelector(".symbol-sub").textContent=label;tr.children[1].textContent=category;tbody.appendChild(tr)});
  document.getElementById("dashboard-count").textContent=rows.length?rows.length+" shown":"—";
  document.getElementById("dashboard-result-count").textContent=rows.length+" instruments shown";
  document.getElementById("dashboard-search").value="";
