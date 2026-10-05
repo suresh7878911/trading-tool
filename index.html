@@ -428,4 +428,33 @@ refresh();window.setInterval(refresh,5000);
  document.querySelectorAll(".chart-tool").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".chart-tool").forEach(x=>x.classList.toggle("active",x===b));const a=[...document.querySelectorAll(".chart-tool.active")].map(x=>x.dataset.indicator);document.getElementById("chart-indicator-note").textContent=a.join(" + ")+" · live history";}));
  load("15m");
 })();
+</script><script id="TRADINGINR_BACKTEST_V1">
+(function(){
+ const btn=document.getElementById("strategy-apply");if(!btn)return;
+ const fmt=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
+ function ema(a,p){let k=2/(p+1),e=a[0];return a.map((v,i)=>i?((v*k)+(e*(1-k))):(e=v));}
+ btn.addEventListener("click",async()=>{
+  btn.disabled=true;const st=document.getElementById("strategy-status");if(st)st.textContent="Loading FYERS history…";
+  try{
+   const r=await fetch("/api/fyers/history?symbol=nifty&resolution=15",{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"History unavailable");
+   const cs=(j.candles||[]).map(x=>({t:Number(x[0]),c:Number(x[4])})).filter(x=>Number.isFinite(x.c));
+   if(cs.length<30)throw Error("Not enough historical candles");
+   const fast=ema(cs.map(x=>x.c),9),slow=ema(cs.map(x=>x.c),21);let entry=null,rets=[],peak=1,equity=1,wins=0;
+   for(let i=1;i<cs.length;i++){
+    const up=fast[i]>slow[i]&&fast[i-1]<=slow[i-1],down=fast[i]<slow[i]&&fast[i-1]>=slow[i-1];
+    if(entry===null&&up)entry=cs[i].c;
+    else if(entry!==null&&down){const ret=cs[i].c/entry-1;rets.push(ret);equity*=1+ret;peak=Math.max(peak,equity);wins+=ret>0?1:0;entry=null;}
+   }
+   if(entry!==null){const ret=cs.at(-1).c/entry-1;rets.push(ret);equity*=1+ret;peak=Math.max(peak,equity);}
+   let eq=1,maxDD=0;for(const ret of rets){eq*=1+ret;peak=Math.max(peak,eq);maxDD=Math.max(maxDD,(peak-eq)/peak);}
+   const total=(equity-1)*100,win=rets.length?wins/rets.length*100:0;
+   const bs=document.getElementById("backtest-status"),sig=document.getElementById("backtest-signals");
+   if(bs)bs.textContent=rets.length+" trades · "+total.toFixed(2)+"%";
+   if(sig)sig.textContent=win.toFixed(0)+"% win · "+(maxDD*100).toFixed(2)+"% DD";
+   if(st)st.textContent="Completed · NIFTY 50 · 15m · EMA 9/21";
+   const panel=btn.closest(".grid")?.querySelector(".card:last-child");if(panel){let p=panel.querySelector(".backtest-detail");if(!p){p=document.createElement("p");p.className="notice backtest-detail";panel.appendChild(p);}p.textContent="FYERS historical test: "+cs.length+" candles · compounded return "+fmt(total)+"% · max drawdown "+fmt(maxDD*100)+"% · last close ₹"+fmt(cs.at(-1).c)+". No brokerage/slippage assumed.";}
+  }catch(e){if(st)st.textContent="Backtest unavailable · "+(e.message||"error");}
+  finally{btn.disabled=false;}
+ });
+})();
 </script></body></html>
