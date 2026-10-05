@@ -89,7 +89,7 @@ body{background:#f3f6fb}
 <button type="button" class="card feature strategy-type" data-strategy="Pine Script" style="text-align:left"><div class="featureicon">⌘</div><h3>Pine Script</h3><p>Write and manage script code</p></button>
 </div>
 <div class="grid" style="grid-template-columns:1.3fr 1fr;margin-top:0">
-<div class="card" style="background:#f8fafc"><div class="cardhead"><span class="title" id="strategy-editor-title">AI-Based Strategy</span><span class="tag">Editor preview</span></div>
+<div class="card" style="background:#f8fafc"><div class="cardhead"><span class="title" id="strategy-editor-title">AI-Based Strategy</span><span class="tag">Live strategy editor</span></div>
 <label for="strategy-code" class="muted" style="display:block;font-size:11px;margin-bottom:8px">Strategy rules / script</label>
 <textarea id="strategy-code" spellcheck="false" style="display:block;width:100%;min-height:190px;resize:vertical;padding:13px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--text);font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace" placeholder="Describe your strategy rules here...">Market: NIFTY
 Timeframe: 15 minutes
@@ -266,7 +266,7 @@ document.getElementById("dashboard-back").addEventListener("click",()=>{document
  }
  let busy=false;
  window.__refreshFyersDashboard=refresh;
- setInterval(refresh,30000);
+ setInterval(refresh,5000);
 })();
 
 /* Preview chart renderer removed: live FYERS history is the source of truth. */
@@ -336,6 +336,7 @@ async function connect(){
   setTimeout(connect,Math.min(30000,3000+retry++*3000));
  }
 }
+window.__fyersSubscribe=function(extra){try{if(socket&&socket.readyState===WebSocket.OPEN&&Array.isArray(extra)&&extra.length)socket.send(JSON.stringify({symbol:extra,type:"symbolUpdate"}));}catch(_){}};
 connect();
 })();
 </script>
