@@ -444,3 +444,58 @@ connect();
  },1000);
 })();
 </script></body></html>
+<script id="TRADINGINR_DHAN_LIVE_BRIDGE_V1">
+(function(){
+  const ids={
+    NIFTY:["nifty-live-price","nifty-live-change"],
+    BANKNIFTY:["banknifty-live-price","banknifty-live-change"],
+    VIX:["vix-live-price","vix-live-change"],
+    FINNIFTY:["finnifty-live-price","finnifty-live-change"],
+    MIDCPNIFTY:["midcpnifty-live-price","midcpnifty-live-change"],
+    SENSEX:["sensex-live-price","sensex-live-change"]
+  };
+  const fmt=v=>Number.isFinite(Number(v))?Number(v).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";
+  const paint=(e,v)=>{if(e)e.style.color=v>0?"var(--green)":v<0?"var(--red)":"var(--muted)";};
+  let running=false,failCount=0;
+  function setStatus(text){
+    const b=document.getElementById("terminal-feed-badge");
+    const box=document.getElementById("fyers-connection-status");
+    if(b&&text)b.textContent=text;
+    if(box&&text)box.textContent=text;
+  }
+  async function poll(){
+    if(running)return;
+    running=true;
+    try{
+      const r=await fetch("/api/dhan/marketfeed?symbols=NIFTY,BANKNIFTY,VIX,FINNIFTY,MIDCPNIFTY,SENSEX",{cache:"no-store"});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||!d.connected)throw new Error(d.message||"Dhan unavailable");
+      let ticks=0;
+      (d.data||[]).forEach(x=>{
+        const pair=ids[x.symbol];if(!pair)return;
+        const p=document.getElementById(pair[0]),c=document.getElementById(pair[1]);
+        if(Number.isFinite(x.last_price)&&p)p.textContent=fmt(x.last_price);
+        if(c&&(Number.isFinite(x.change)||Number.isFinite(x.change_percent))){
+          c.textContent=(Number.isFinite(x.change)?(x.change>=0?"+":"")+fmt(x.change):"—")+
+            (Number.isFinite(x.change_percent)?" ("+(x.change_percent>=0?"+":"")+Number(x.change_percent).toFixed(2)+"%)":"")+" · LIVE";
+          paint(c,x.change);
+        }
+        ticks++;
+      });
+      if(ticks) {
+        failCount=0;
+        setStatus("LIVE FEED: DHAN QUOTE API");
+        window.__tradingINRHeartbeat&&window.__tradingINRHeartbeat();
+      }
+    }catch(_){
+      failCount++;
+      if(failCount<3)setStatus("LIVE FEED: FYERS WEBSOCKET");
+      else setStatus("LIVE FEED: Dhan not configured · FYERS active");
+    }finally{
+      running=false;
+      setTimeout(poll,failCount>=3?10000:1100);
+    }
+  }
+  poll();
+})();
+</script>
