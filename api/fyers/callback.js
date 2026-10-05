@@ -8,6 +8,7 @@ module.exports = async function handler(req, res) {
   const appId=process.env.FYERS_APP_ID, secret=process.env.FYERS_SECRET_ID, redirectUri=process.env.FYERS_REDIRECT_URI;
   const q=req.query||{}, jar=cookies(req), state=Array.isArray(q.state)?q.state[0]:q.state, code=Array.isArray(q.auth_code)?q.auth_code[0]:q.auth_code;
   const clearState="fyers_oauth_state=; Path=/api/fyers; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
+  const clearToken="fyers_access_token=; Path=/api/fyers; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
   if(!appId||!secret||!redirectUri){res.setHeader("Set-Cookie",clearState);return res.redirect(302,"/?fyers=setup");}
   if(!state||!jar.fyers_oauth_state||state!==jar.fyers_oauth_state||!code){res.setHeader("Set-Cookie",clearState);return res.redirect(302,"/?fyers=failed");}
   try{
@@ -16,12 +17,17 @@ module.exports = async function handler(req, res) {
     const data=await upstream.json();
     if(!upstream.ok||data.s!=="ok"||!data.access_token){
       console.error("FYERS auth validation failed",{httpStatus:upstream.status,status:data.s,code:data.code,message:data.message});
-      res.setHeader("Set-Cookie",clearState);
+      res.setHeader("Set-Cookie",[clearState,clearToken]);
       const code=encodeURIComponent(String(data.code??"unknown")).slice(0,80),message=encodeURIComponent(String(data.message??"FYERS validation failed")).slice(0,180);
       return res.redirect(302,"/?fyers=failed&code="+code+"&message="+message);
     }
     console.log("FYERS auth validation succeeded");
     res.setHeader("Set-Cookie",[clearState,"fyers_access_token="+encodeURIComponent(data.access_token)+"; Path=/api/fyers; HttpOnly; Secure; SameSite=Lax; Max-Age=43200"]);
     return res.redirect(302,"/?fyers=connected");
-  }catch(e){res.setHeader("Set-Cookie",clearState);return res.redirect(302,"/?fyers=failed");}
+  }catch(e){
+    console.error("FYERS auth callback exception",{message:String(e&&e.message||e)});
+    res.setHeader("Set-Cookie",[clearState,clearToken]);
+    const message=encodeURIComponent("Unable to validate FYERS authorization. Please retry once after the cooldown.").slice(0,180);
+    return res.redirect(302,"/?fyers=failed&code=network&message="+message);
+  }
 };
