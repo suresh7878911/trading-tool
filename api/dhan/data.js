@@ -8,7 +8,27 @@ module.exports = async function handler(req,res){
   if(req.method==="POST"){
     try{
       const body=typeof req.body==="string"?JSON.parse(req.body):(req.body||{});
-      if(String(body.mode||"").toLowerCase()!=="strategy")return res.status(405).json({ok:false,error:"Method not allowed"});
+      const requestedMode=String(body.mode||"").toLowerCase();
+      if(requestedMode==="ai"){
+        const task=String(body.task||"market-analysis"),query=String(body.query||"").trim();
+        const context=body.context&&typeof body.context==="object"?body.context:{};
+        if(!query)return res.status(400).json({ok:false,message:"AI query is required"});
+        const system="You are TradingINR Central AI Market Brain for Indian equities and F&O. You coordinate chart analysis, market scanning, option-chain reasoning, strategy research, indicators and risk analysis. Never place live orders, never promise profits, and clearly separate observed data from inference. Give actionable research, not certainty. Return JSON keys: answer, bias, setup, confirmations, risks, nextChecks, score.";
+        if(process.env.OPENAI_API_KEY){
+          const upstream=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+process.env.OPENAI_API_KEY},body:JSON.stringify({model:process.env.OPENAI_MODEL||"gpt-5-mini",input:[{role:"system",content:system},{role:"user",content:"Task: "+task+"\\nQuestion: "+query+"\\nMarket context: "+JSON.stringify(context)}],temperature:0.2})});
+          const data=await upstream.json().catch(()=>({}));
+          if(!upstream.ok)throw Error(data?.error?.message||"AI provider error");
+          const raw=data.output_text||data.output?.flatMap(x=>x.content||[]).map(x=>x.text||"").join("")||"";
+          let analysis;try{analysis=JSON.parse(raw)}catch(_){analysis={answer:raw,bias:"NEUTRAL",setup:"Review live market context",confirmations:["Use price, volume and OI confirmation"],risks:["AI output is research only"],nextChecks:["Verify current market data"],score:50}};
+          return res.status(200).json({ok:true,source:"openai",engine:"TradingINR Central AI",task,analysis,serverTime:Date.now()});
+        }
+        const q=query.toLowerCase();
+        let answer="Central AI fallback: connect the AI provider to enable full market reasoning.";
+        if(q.includes("nifty"))answer="NIFTY selected. Use live price, change, volume, trend and OI together before forming a setup.";
+        else if(q.includes("bank"))answer="BANKNIFTY selected. Check trend, VWAP, momentum and option-chain OI before confirmation.";
+        return res.status(200).json({ok:true,source:"fallback",engine:"TradingINR Central AI",task,analysis:{answer,bias:"NEUTRAL",setup:"Await live-data confirmation",confirmations:["Price + volume + OI"],risks:["Fallback is not predictive AI"],nextChecks:["Configure OPENAI_API_KEY for full AI"],score:35},serverTime:Date.now()});
+      }
+      if(requestedMode!=="strategy")return res.status(405).json({ok:false,error:"Method not allowed"});
       const strategy=String(body.strategy||"").trim(), mode=String(body.strategyMode||"AI-Based");
       if(!strategy)return res.status(400).json({ok:false,message:"Strategy text is required"});
       const find=(rx,fallback)=>(strategy.match(rx)?.[1]||fallback).trim();
