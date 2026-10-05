@@ -415,7 +415,7 @@ connect();
  if(!out){out=document.createElement("div");out.id="assistant-answer";out.className="aihint";out.style.marginTop="12px";send.parentElement.parentElement.appendChild(out);}
  async function ask(){
   const q=input.value.trim();if(!q)return;
-  send.disabled=true;out.textContent="Central AI is analyzing market context…";
+  send.disabled=true;out.textContent="Central AI is reading live market context…";
   try{
    const r=await fetch("/api/dhan/data",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"ai",task:"assistant",query:q,context:{terminal:"TradingINR",modules:["chart","scanner","strategy","option-chain","risk"]}})});
    const d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||"AI unavailable");
