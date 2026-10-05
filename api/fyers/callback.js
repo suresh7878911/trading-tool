@@ -5,7 +5,7 @@ module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("Referrer-Policy", "no-referrer");
   if (req.method !== "GET") { res.setHeader("Allow", "GET"); return res.status(405).end("Method not allowed"); }
-  const appId=process.env.FYERS_APP_ID, secret=process.env.FYERS_SECRET_ID, redirectUri=process.env.FYERS_REDIRECT_URI;
+  const appId=String(process.env.FYERS_APP_ID||"").trim(), secret=String(process.env.FYERS_SECRET_ID||"").trim(), redirectUri=String(process.env.FYERS_REDIRECT_URI||"").trim();
   const q=req.query||{}, jar=cookies(req), state=Array.isArray(q.state)?q.state[0]:q.state, code=Array.isArray(q.auth_code)?q.auth_code[0]:q.auth_code;
   const clearState="fyers_oauth_state=; Path=/api/fyers; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
   const clearToken="fyers_access_token=; Path=/api/fyers; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
