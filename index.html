@@ -407,7 +407,7 @@ connect();
   finally{btn.disabled=false;}
  });
 })();
-</script><script id="TRADINGINR_ASSISTANT_LIVE_V1">
+</script><script id="TRADINGINR_ASSISTANT_LIVE_V2">
 (function(){
  const input=document.getElementById("question"),send=document.getElementById("assistant-send"),box=document.getElementById("assistant");
  if(!input||!send||!box)return;
@@ -415,19 +415,16 @@ connect();
  if(!out){out=document.createElement("div");out.id="assistant-answer";out.className="aihint";out.style.marginTop="12px";send.parentElement.parentElement.appendChild(out);}
  async function ask(){
   const q=input.value.trim();if(!q)return;
-  send.disabled=true;out.textContent="Checking live FYERS data…";
+  send.disabled=true;out.textContent="Central AI is analyzing market context…";
   try{
-   const s=q.toUpperCase();
-   const wanted=s.includes("BANK")?["banknifty"]:s.includes("VIX")?["vix"]:s.includes("FINNIFTY")?["finnifty"]:s.includes("SENSEX")?["sensex"]:["nifty"];
-   const r=await fetch("/api/fyers/quotes?symbols="+encodeURIComponent(wanted.join(",")),{cache:"no-store"});
-   const d=await r.json();const row=(d.data||[])[0];const v=row?.v||row||{};
-   if(!r.ok||v.lp===undefined)throw new Error("No live quote");
-   const ch=Number(v.ch),chp=Number(v.chp);
-   out.textContent=(row.n||wanted[0]).toUpperCase()+" · LIVE "+Number(v.lp).toLocaleString("en-IN",{maximumFractionDigits:2})+
-    (Number.isFinite(ch)?" · Change "+(ch>=0?"+":"")+ch.toFixed(2):"")+
-    (Number.isFinite(chp)?" ("+(chp>=0?"+":"")+chp.toFixed(2)+"%)":"");
-   if(Number.isFinite(ch))out.style.color=ch>0?"#20b26b":ch<0?"#e04444":"#8b95a7";
-  }catch(e){out.textContent="Live answer unavailable. Connect/verify FYERS and try again.";}
+   const r=await fetch("/api/dhan/data",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"ai",task:"assistant",query:q,context:{terminal:"TradingINR",modules:["chart","scanner","strategy","option-chain","risk"]}})});
+   const d=await r.json();if(!r.ok||!d.ok)throw Error(d.message||"AI unavailable");
+   const a=d.analysis||{};out.innerHTML="<b>"+(d.source==="openai"?"CENTRAL AI · LIVE":"CENTRAL AI · READY")+"</b><br><br>"+String(a.answer||"No answer").replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]))+
+    (a.bias?"<br><b>Bias:</b> "+a.bias:"")+(a.setup?"<br><b>Setup:</b> "+a.setup:"")+
+    (Array.isArray(a.confirmations)?"<br><b>Confirmations:</b> "+a.confirmations.join(" · "):"")+
+    (Array.isArray(a.risks)?"<br><b>Risk:</b> "+a.risks.join(" · "):"");
+   out.style.color=a.bias==="BULLISH"?"#20b26b":a.bias==="BEARISH"?"#e04444":"var(--muted)";
+  }catch(e){out.textContent="Central AI unavailable · "+(e.message||"error");}
   finally{send.disabled=false;}
  }
  send.addEventListener("click",ask);input.addEventListener("keydown",e=>{if(e.key==="Enter")ask();});
