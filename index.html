@@ -109,6 +109,18 @@ Exit: Stop-loss 0.5% · Target 1%</textarea>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn primary" type="button" id="strategy-ai-analyze">✦ AI Analyze</button><button class="btn" type="button" id="strategy-apply">Run historical backtest</button><button class="btn" type="button" id="strategy-save">Save draft</button><span class="muted" id="strategy-status" style="align-self:center;font-size:11px">AI research mode · no live orders</span></div></div>
 <div class="card"><div class="cardhead"><span class="title">AI Research Output</span><span class="tag">LIVE DATA</span></div><div id="strategy-ai-output" style="min-height:145px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe;padding:13px;color:var(--muted);font-size:12px;line-height:1.6">Select a strategy mode and run AI Analyze. The assistant will structure the idea into conditions, confirmations, risk and backtest parameters.</div><div class="stats" style="grid-template-columns:repeat(2,1fr)"><div class="stat"><span>Backtest</span><b id="backtest-status" style="font-size:13px">Ready</b></div><div class="stat"><span>Signals</span><b id="backtest-signals" style="font-size:13px">Ready</b></div></div><p class="notice">AI analysis is research assistance, not a guaranteed trading signal.</p></div>
 </div></section>
+<section class="card ai-workspace-panel" id="ai-workspace" style="margin-top:16px">
+<div class="cardhead"><div><div class="title">AI Workspace <span class="tag">CENTRAL BRAIN</span></div><div class="muted" style="font-size:11px;margin-top:5px">One command layer for every TradingINR module.</div></div><span class="status-chip">AI CONTROL</span></div>
+<div class="featuregrid" style="grid-template-columns:repeat(3,1fr);margin:0">
+<button class="card feature ai-module" data-ai-task="market-summary"><div class="featureicon">◈</div><h3>AI Market Summary</h3><p>Trend, breadth, volatility and market context.</p></button>
+<button class="card feature ai-module" data-ai-task="scanner"><div class="featureicon">▦</div><h3>AI Market Scanner</h3><p>Find momentum, breakout and unusual activity candidates.</p></button>
+<button class="card feature ai-module" data-ai-task="indicator"><div class="featureicon">⌁</div><h3>AI Indicator Engine</h3><p>Combine indicators and multi-timeframe confirmation.</p></button>
+<button class="card feature ai-module" data-ai-task="algo"><div class="featureicon">◈</div><h3>AI Algo Builder</h3><p>Convert trading rules into structured execution logic.</p></button>
+<button class="card feature ai-module" data-ai-task="pine"><div class="featureicon">⌘</div><h3>AI Pine Editor</h3><p>Generate and refine Pine Script from plain language.</p></button>
+<button class="card feature ai-module" data-ai-task="risk"><div class="featureicon">⚖</div><h3>AI Risk Manager</h3><p>Position sizing, stop, target and drawdown checks.</p></button>
+</div>
+<div id="ai-workspace-output" class="aihint" style="margin-top:14px;padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)">Select a module or use the AI Assistant to command the workspace.</div>
+</section>
 <section class="card" id="assistant" style="margin-top:16px"><div class="cardhead"><div class="airow"><div class="aiavatar">AI</div><div><div class="title">INR AI Assistant <span class="tag">MARKET DATA</span></div><div class="muted" style="font-size:11px;margin-top:4px">Live market-data assistant</div></div></div><span class="tag">ACTIVE</span></div><div class="aihint">Ask about chart concepts, indicators or market terminology. Live quote and option-chain lookups are active. Advanced natural-language AI analysis will be added separately.</div><div class="aiinput"><input id="question" placeholder="Ask: NIFTY price, BANKNIFTY, PCR…" aria-label="Ask INR AI"><button class="btn" id="assistant-send">Send</button></div></section>
 <section class="card" id="contact" style="margin-top:16px"><div class="cardhead"><span class="title">Connect with TradingINR</span><span class="tag">Contact</span></div><div class="aihint">For queries and updates, reach us through the contact channel below. Add your preferred public email address before launch.</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn" href="https://wa.me/919549344848" target="_blank" rel="noopener">WhatsApp · +91 95493 44848</a><a class="btn" href="https://t.me/bilinera_scalping_nifty50" target="_blank" rel="noopener">Telegram ↗</a><span class="tag">Email: to be configured</span></div></section>
 <footer class="foot"><span>© 2026 TradingINR · Independent market platform</span><span>Follow Bilinear Stock: <a href="https://t.me/bilinera_scalping_nifty50" target="_blank" rel="noopener noreferrer">Telegram ↗</a> · <a href="https://youtube.com/@bilinearstock" target="_blank" rel="noopener noreferrer">YouTube ↗</a></span></footer>
@@ -516,6 +528,15 @@ connect();
 document.querySelectorAll(".ai-folder a[data-ai-mode]").forEach(a=>a.addEventListener("click",()=>{
  const mode=a.dataset.aiMode;
  setTimeout(()=>{const b=document.querySelector('.strategy-type[data-strategy="'+CSS.escape(mode)+'"]');if(b)b.click();},120);
+}));
+})();
+</script><script id="TRADINGINR_AI_WORKSPACE_V2">
+(function(){
+const out=document.getElementById("ai-workspace-output");
+document.querySelectorAll(".ai-module").forEach(b=>b.addEventListener("click",async()=>{
+ const task=b.dataset.aiTask; if(!out)return; out.textContent="Central AI is reading live market context…";
+ try{const d=await window.TradingINRAI("Analyze "+task+" for the current Indian market. Give a research-oriented result with bias, setup, confirmations, risks and next checks.",task);const a=d.analysis||{};out.innerHTML="<b>"+(d.source==="openai"?"CENTRAL AI · LIVE":"CENTRAL AI · READY")+"</b><br><br>"+String(a.answer||"Analysis ready").replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]))+"<br><br><b>Bias:</b> "+(a.bias||"NEUTRAL")+"<br><b>Setup:</b> "+(a.setup||"Review live data")+"<br><b>Risk:</b> "+(Array.isArray(a.risks)?a.risks.join(" · "):"Review risk controls");}
+ catch(e){out.textContent="AI module unavailable: "+e.message;}
 }));
 })();
 </script></body></html>
