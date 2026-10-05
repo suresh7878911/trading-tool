@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
   if(!appId||!secret||!redirectUri){res.setHeader("Set-Cookie",clearState);return res.redirect(302,"/?fyers=setup");}
   if(!state||!jar.fyers_oauth_state||state!==jar.fyers_oauth_state||!code){res.setHeader("Set-Cookie",clearState);return res.redirect(302,"/?fyers=failed");}
   try{
-    const appIdHash=crypto.createHash("sha256").update(appId+secret).digest("hex");
+    const appIdHash=crypto.createHash("sha256").update(appId+":"+secret).digest("hex");
     const upstream=await fetch("https://api-t1.fyers.in/api/v3/validate-authcode",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({grant_type:"authorization_code",appIdHash,code})});
     const data=await upstream.json();
     if(!upstream.ok||data.s!=="ok"||!data.access_token){
