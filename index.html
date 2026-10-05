@@ -349,23 +349,22 @@ connect();
  function ema(a,p){let k=2/(p+1),e=a[0];return a.map((v,i)=>i?((v*k)+(e*(1-k))):(e=v));}
  function rsi(a,p=14){let g=0,l=0;for(let i=1;i<=p&&i<a.length;i++){let d=a[i]-a[i-1];if(d>0)g+=d;else l-=d;}g/=p;l/=p;let out=Array(a.length).fill(null);out[p]=l===0?100:100-(100/(1+g/l));for(let i=p+1;i<a.length;i++){let d=a[i]-a[i-1];g=(g*(p-1)+Math.max(d,0))/p;l=(l*(p-1)+Math.max(-d,0))/p;out[i]=l===0?100:100-(100/(1+g/l));}return out;}
  function draw(candles,ind){
-  const W=800,H=245,pad=12,cl=candles.map(x=>Number(x[4])), hi=Math.max(...candles.map(x=>Number(x[2]))),lo=Math.min(...candles.map(x=>Number(x[3]))),range=Math.max(hi-lo,0.01);
-  const x=i=>pad+i*(W-pad*2)/Math.max(candles.length-1,1), y=v=>H-pad-(v-lo)/range*(H-pad*2);
-  const pts=cl.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
-  const ep=ema(cl,9).map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
-  const volMax=Math.max(...candles.map(x=>Number(x[5])||0),1);
-  const bars=candles.map((c,i)=>{const xx=x(i)-1.2,bh=((Number(c[5])||0)/volMax)*28;return '<rect x="'+xx.toFixed(1)+'" y="'+(H-pad-bh).toFixed(1)+'" width="2.4" height="'+bh.toFixed(1)+'" fill="currentColor" opacity=".12"/>';}).join("");
-  svg.innerHTML='<path d="'+pts+'" fill="none" stroke="currentColor" stroke-width="2.2" opacity=".9"/><path d="'+ep+'" fill="none" stroke="#5277d1" stroke-width="1.5" opacity=".9"/>'+bars;
+  const W=800,H=245,pad={l:48,r:58,t:12,b:28},plotH=H-pad.t-pad.b,cl=candles.map(x=>Number(x[4])),hi=Math.max(...candles.map(x=>Number(x[2]))),lo=Math.min(...candles.map(x=>Number(x[3]))),range=Math.max(hi-lo,0.01),volMax=Math.max(...candles.map(x=>Number(x[5])||0),1);
+  const x=i=>pad.l+i*(W-pad.l-pad.r)/Math.max(candles.length-1,1), y=v=>pad.t+(hi-v)/range*plotH, step=(W-pad.l-pad.r)/Math.max(candles.length,1), body=Math.max(2,Math.min(8,step*.62));
+  const ep=ema(cl,9), grid=[0,.25,.5,.75,1].map(q=>{const yy=pad.t+plotH*q,p=hi-range*q;return '<line x1="'+pad.l+'" y1="'+yy.toFixed(1)+'" x2="'+(W-pad.r)+'" y2="'+yy.toFixed(1)+'" stroke="#d9e1ea" stroke-width="1" opacity=".65"/><text x="'+(W-4)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" font-size="9" fill="#718096">'+fmt(p)+'</text>';}).join("");
+  const candlesSvg=candles.map((c,i)=>{const o=Number(c[1]),h=Number(c[2]),l=Number(c[3]),q=Number(c[4]),up=q>=o,col=up?"#16a56f":"#e04444",xx=x(i),bw=body,yt=y(Math.max(o,q)),yb=y(Math.min(o,q)),vh=((Number(c[5])||0)/volMax)*18;return '<g><line x1="'+xx.toFixed(1)+'" y1="'+y(h).toFixed(1)+'" x2="'+xx.toFixed(1)+'" y2="'+y(l).toFixed(1)+'" stroke="'+col+'" stroke-width="1"/><rect x="'+(xx-bw/2).toFixed(1)+'" y="'+yt.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,yb-yt).toFixed(1)+'" rx="1" fill="'+col+'"/><rect x="'+(xx-bw/2).toFixed(1)+'" y="'+(H-pad.b-vh).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+vh.toFixed(1)+'" fill="'+col+'" opacity=".18"/></g>';}).join("");
+  const epPath=ep.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
   const last=cl.at(-1),prev=cl.at(-2)||last,change=last-prev,rr=rsi(cl).filter(Number.isFinite).at(-1);
-  const note=document.getElementById("chart-indicator-note");if(note)note.textContent=(ind==="EMA"?"EMA 9":ind)+" · Close "+fmt(last)+(Number.isFinite(rr)?" · RSI "+rr.toFixed(1):"");
+  const upLast=change>=0,lastColor=upLast?"#16a56f":"#e04444";
+  svg.innerHTML='<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="transparent"/>'+grid+candlesSvg+'<path d="'+epPath+'" fill="none" stroke="#5277d1" stroke-width="1.4"/><line x1="'+pad.l+'" y1="'+y(last).toFixed(1)+'" x2="'+(W-pad.r)+'" y2="'+y(last).toFixed(1)+'" stroke="'+lastColor+'" stroke-dasharray="4 3" opacity=".7"/><rect x="'+(W-pad.r+2)+'" y="'+(y(last)-9).toFixed(1)+'" width="53" height="18" rx="3" fill="'+lastColor+'"/><text x="'+(W-pad.r+28)+'" y="'+(y(last)+3).toFixed(1)+'" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">'+fmt(last)+'</text>';
+  const note=document.getElementById("chart-indicator-note");if(note)note.textContent=(ind==="EMA"?"EMA 9":ind)+" · "+(upLast?"▲":"▼")+" "+fmt(Math.abs(change))+(Number.isFinite(rr)?" · RSI "+rr.toFixed(1):"");
   document.getElementById("chart-from").textContent=new Date(Number(candles[0][0])*1000).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
-  document.getElementById("chart-mid").textContent=(candles[Math.floor(candles.length/2)]?new Date(Number(candles[Math.floor(candles.length/2)][0])*1000).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):"—");
+  document.getElementById("chart-mid").textContent=new Date(Number(candles[Math.floor(candles.length/2)][0])*1000).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
   document.getElementById("chart-now").textContent=new Date(Number(candles.at(-1)[0])*1000).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
   document.getElementById("chart-interval").textContent=ind;
-  document.getElementById("chart-connection").textContent="FYERS history";
-  document.getElementById("chart-market-status").textContent=change>=0?"Bullish close":"Bearish close";
- }
- async function load(frame){
+  document.getElementById("chart-connection").textContent="FYERS candles";
+  document.getElementById("chart-market-status").textContent=upLast?"Bullish close":"Bearish close";
+ } async function load(frame){
   const conn=document.getElementById("chart-connection");if(conn)conn.textContent="Loading…";
   try{const r=await fetch("/api/fyers/history?symbol=nifty&resolution="+encodeURIComponent(resMap[frame]||"15"),{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"History unavailable");if(!j.candles?.length)throw Error("No candles returned");draw(j.candles,frame);}
   catch(e){svg.innerHTML="";if(conn)conn.textContent="FYERS history unavailable";document.getElementById("chart-market-status").textContent="Unavailable";}
