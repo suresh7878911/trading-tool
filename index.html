@@ -308,7 +308,7 @@ async function connect(){
   socket.onmessage=e=>{
    try{
     const m=JSON.parse(e.data);
-    if(m&&m.symbol)update(m);
+    if(m&&m.symbol){update(m);if(window.__fyersChartTick)window.__fyersChartTick(m);}
     else if(Array.isArray(m))m.forEach(update);
     else if(m&&m.type==="cn"&&socket&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({symbol:symbols,type:"symbolUpdate"}));
    }catch(_){}
@@ -348,7 +348,12 @@ connect();
 <script id="TRADINGINR_LIVE_HISTORY_V1">
 (function(){
  const svg=document.getElementById("live-chart-svg");if(!svg)return;
- const resMap={"1m":"1","5m":"5","15m":"15","1h":"1h","4h":"4h","1D":"1D","1W":"1W"};
+
+ let activeFrame="15m",liveCandles=[],liveIndicator="EMA";
+ function normalizeTick(q){const v=q?.v||q||{},p=Number(v.lp??v.ltp??v.last_price);if(!Number.isFinite(p))return null;const ts=Number(v.timestamp??v.ts??v.exch_feed_time??Date.now()/1000);return {t:ts>1e12?Math.floor(ts/1000):ts,p,vol:Number(v.volume??v.vol??0)||0};}
+ function intervalSec(){return ({"1m":60,"5m":300,"15m":900,"1h":3600,"4h":14400,"1D":86400,"1W":604800})[activeFrame]||900;}
+ function applyTick(q){const t=normalizeTick(q);if(!t||String(q.symbol||q.n||"").toUpperCase()!=="NSE:NIFTY50-INDEX")return;if(!liveCandles.length)return;const sec=intervalSec(),bucket=Math.floor(t.t/sec)*sec,last=liveCandles[liveCandles.length-1];if(bucket<Number(last[0]))return;if(bucket===Number(last[0])){last[2]=Math.max(Number(last[2]),t.p);last[3]=Math.min(Number(last[3]),t.p);last[4]=t.p;if(t.vol)last[5]=Math.max(Number(last[5]||0),t.vol);}else{liveCandles.push([bucket,t.p,t.p,t.p,t.p,t.vol]);if(liveCandles.length>120)liveCandles.shift();}draw(liveCandles,liveIndicator);const conn=document.getElementById("chart-connection");if(conn)conn.textContent="LIVE · FYERS TICK STREAM";}
+ window.__fyersChartTick=applyTick;\n const resMap={"1m":"1","5m":"5","15m":"15","1h":"1h","4h":"4h","1D":"1D","1W":"1W"};
  const fmt=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
  const esc=s=>String(s).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));
  function ema(a,p){let k=2/(p+1),e=a[0];return a.map((v,i)=>i?((v*k)+(e*(1-k))):(e=v));}
@@ -369,9 +374,9 @@ connect();
   document.getElementById("chart-interval").textContent=ind;
   document.getElementById("chart-connection").textContent="FYERS candles";
   document.getElementById("chart-market-status").textContent=upLast?"Bullish close":"Bearish close";
- } async function load(frame){
+ } async function load(frame){\n  activeFrame=frame;liveCandles=[];
   const conn=document.getElementById("chart-connection");if(conn)conn.textContent="Loading…";
-  try{const r=await fetch("/api/fyers/history?symbol=nifty&resolution="+encodeURIComponent(resMap[frame]||"15"),{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"History unavailable");if(!j.candles?.length)throw Error("No candles returned");draw(j.candles,frame);}
+  try{const r=await fetch("/api/fyers/history?symbol=nifty&resolution="+encodeURIComponent(resMap[frame]||"15"),{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.message||"History unavailable");if(!j.candles?.length)throw Error("No candles returned");liveCandles=(j.candles||[]).map(x=>[...x]);draw(liveCandles,frame);}
   catch(e){svg.innerHTML="";if(conn)conn.textContent="FYERS history unavailable";document.getElementById("chart-market-status").textContent="Unavailable";}
  }
  document.querySelectorAll(".timeframe").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".timeframe").forEach(x=>x.classList.toggle("active",x===b));load(b.dataset.frame);}));
