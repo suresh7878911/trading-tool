@@ -459,6 +459,32 @@ connect();
   status.textContent="AI structure generated · review before testing";
  });
 })();
+</script><script id="TRADINGINR_STRATEGY_AI_LIVE_V3">
+(function(){
+ const btn=document.getElementById("strategy-ai-analyze"),code=document.getElementById("strategy-code"),out=document.getElementById("strategy-ai-output"),status=document.getElementById("strategy-status");
+ if(!btn||!code||!out)return;
+ const esc=s=>String(s??"").replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));
+ btn.addEventListener("click",async()=>{
+   const strategy=code.value.trim(), mode=document.querySelector(".strategy-type.active")?.dataset.strategy||"AI-Based";
+   if(!strategy){out.textContent="Enter a strategy idea first.";return}
+   btn.disabled=true; status.textContent="AI engine analyzing strategy…"; out.textContent="Building structured research plan…";
+   try{
+     const r=await fetch("/api/strategy/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({strategy,mode})});
+     const d=await r.json();
+     if(!r.ok||!d.ok)throw Error(d.message||"AI analysis unavailable");
+     const a=d.analysis||{};
+     const rows=[
+       ["Market",a.market],["Timeframe",a.timeframe],["Entry",a.entry],["Exit",a.exit],
+       ["Risk",a.risk],["Confirmations",a.confirmations],["Filters",a.filters],
+       ["Backtest plan",a.backtestPlan],["Rule completeness",String(a.score??"—")+"/100"]
+     ];
+     out.innerHTML="<b>AI Strategy Research · "+esc(d.source==="openai"?"LIVE AI":"AI-READY FALLBACK")+"</b><div style='display:grid;gap:7px;margin-top:10px'>"+
+       rows.map(x=>"<div><span style='color:var(--muted)'>"+esc(x[0])+": </span><strong>"+esc(x[1])+"</strong></div>").join("")+
+       (Array.isArray(a.warnings)&&a.warnings.length?"<div style='margin-top:5px;color:var(--red)'>⚠ "+a.warnings.map(esc).join(" · ")+"</div>":"")+"</div>";
+     status.textContent=(d.source==="openai"?"Live AI analysis complete":"Structured AI fallback complete")+" · review before testing";
+   }catch(e){out.textContent="AI analysis unavailable · "+(e.message||"error");status.textContent="AI engine unavailable";}finally{btn.disabled=false}
+ });
+})();
 </script></body></html>
 <script id="TRADINGINR_DHAN_LIVE_BRIDGE_V1">
 (function(){
