@@ -469,7 +469,7 @@ connect();
    if(!strategy){out.textContent="Enter a strategy idea first.";return}
    btn.disabled=true; status.textContent="AI engine analyzing strategy…"; out.textContent="Building structured research plan…";
    try{
-     const r=await fetch("/api/strategy/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({strategy,mode})});
+     const r=await fetch("/api/dhan/data",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"strategy",strategy,strategyMode:mode})});
      const d=await r.json();
      if(!r.ok||!d.ok)throw Error(d.message||"AI analysis unavailable");
      const a=d.analysis||{};
