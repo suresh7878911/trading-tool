@@ -378,6 +378,7 @@ async function refresh(){
   if(!sj.connected||!sj.validated){if(box)box.textContent=sj.message||"FYERS not connected";if(badge)badge.textContent="LIVE FEED: CONNECTION REQUIRED";return}
   if(box)box.textContent="Connected · Live market quotes updating automatically.";
   if(badge)badge.textContent="LIVE FEED: FYERS AUTHORIZED";
+  const oc=document.getElementById("oc-load");if(oc&&!oc.dataset.autoStarted){oc.dataset.autoStarted="1";oc.click();}
   const qr=await fetch("/api/fyers/quotes?symbols="+encodeURIComponent(symbols),{cache:"no-store"});
   if(!qr.ok)return;
   const q=await qr.json(),rows=Array.isArray(q.data)?q.data:[];
