@@ -14,7 +14,13 @@ module.exports = async function handler(req, res) {
     const appIdHash=crypto.createHash("sha256").update(appId+secret).digest("hex");
     const upstream=await fetch("https://api-t1.fyers.in/api/v3/validate-authcode",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({grant_type:"authorization_code",appIdHash,code})});
     const data=await upstream.json();
-    if(!upstream.ok||data.s!=="ok"||!data.access_token){res.setHeader("Set-Cookie",clearState);return res.redirect(302,"/?fyers=failed");}
+    if(!upstream.ok||data.s!=="ok"||!data.access_token){
+      console.error("FYERS auth validation failed",{httpStatus:upstream.status,status:data.s,code:data.code,message:data.message});
+      res.setHeader("Set-Cookie",clearState);
+      const code=encodeURIComponent(String(data.code??"unknown")).slice(0,80),message=encodeURIComponent(String(data.message??"FYERS validation failed")).slice(0,180);
+      return res.redirect(302,"/?fyers=failed&code="+code+"&message="+message);
+    }
+    console.log("FYERS auth validation succeeded");
     res.setHeader("Set-Cookie",[clearState,"fyers_access_token="+encodeURIComponent(data.access_token)+"; Path=/api/fyers; HttpOnly; Secure; SameSite=Lax; Max-Age=43200"]);
     return res.redirect(302,"/?fyers=connected");
   }catch(e){res.setHeader("Set-Cookie",clearState);return res.redirect(302,"/?fyers=failed");}
