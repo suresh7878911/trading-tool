@@ -482,6 +482,24 @@ connect();
    }catch(e){out.textContent="AI analysis unavailable · "+(e.message||"error");status.textContent="AI engine unavailable";}finally{btn.disabled=false}
  });
 })();
+</script><script id="TRADINGINR_AI_BRAIN_V1">
+(function(){
+ const API="/api/dhan/data";
+ function esc(s){return String(s??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));}
+ async function fetchJson(url){const r=await fetch(url,{cache:"no-store"});return r.json();}
+ async function marketContext(){
+  const ctx={time:Date.now(),quotes:null,chart:null,optionChain:null};
+  try{const q=await fetchJson(API+"?mode=quote&symbols=NIFTY,BANKNIFTY,FINNIFTY,MIDCPNIFTY,VIX,SENSEX");ctx.quotes=q.data||[];}catch(_){}
+  try{const h=await fetchJson("/api/fyers/history?symbol=nifty&resolution=15");ctx.chart=(h.candles||h.data||[]).slice(-80);}catch(_){}
+  return ctx;
+ }
+ window.TradingINRAI=async function(query,task){
+  const context=await marketContext();
+  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"ai",task:task||"market-analysis",query,context})});
+  const d=await r.json(); if(!r.ok||!d.ok)throw Error(d.message||"AI request failed"); return d;
+ };
+ window.TradingINRMarketContext=marketContext;
+})();
 </script></body></html>
 <script id="TRADINGINR_DHAN_LIVE_BRIDGE_V1">
 (function(){
