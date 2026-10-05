@@ -467,7 +467,7 @@ connect();
     if(running)return;
     running=true;
     try{
-      const r=await fetch("/api/dhan/marketfeed?symbols=NIFTY,BANKNIFTY,VIX,FINNIFTY,MIDCPNIFTY,SENSEX",{cache:"no-store"});
+      const r=await fetch("/api/dhan/data?mode=quote&symbols=NIFTY,BANKNIFTY,VIX,FINNIFTY,MIDCPNIFTY,SENSEX",{cache:"no-store"});
       const d=await r.json().catch(()=>({}));
       if(!r.ok||!d.connected)throw new Error(d.message||"Dhan unavailable");
       let ticks=0;
