@@ -399,13 +399,13 @@ async function connect(){
    if(box)box.textContent="Connected · FYERS WebSocket live feed";
    if(badge)badge.textContent="LIVE FEED: FYERS WEBSOCKET";
    socket.send(JSON.stringify({type:"authorization",data:d.accessToken}));
-   socket.send(JSON.stringify({symbol:symbols,type:"symbolUpdate"}));
   };
   socket.onmessage=e=>{
    try{
     const m=JSON.parse(e.data);
     if(m&&m.symbol)update(m);
     else if(Array.isArray(m))m.forEach(update);
+    else if(m&&m.type==="cn"&&socket&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({symbol:symbols,type:"symbolUpdate"}));
    }catch(_){}
   };
   socket.onerror=()=>{try{socket.close()}catch(_){}};
