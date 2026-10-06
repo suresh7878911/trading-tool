@@ -648,7 +648,68 @@ document.getElementById("sc-compare").onclick=()=>{const q=prompt("Compare symbo
 document.getElementById("supercharts-compare").onclick=()=>{input.focus();input.select();status.textContent="Compare mode · choose a symbol from search";};
 paintList();
 })();
-</script></body></html>
+</script>
+<style>
+/* TradingINR Edge / monetization workspace */
+.edge-section{margin:28px 0 10px}
+.edge-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:14px}
+.edge-kicker{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cyan);font-weight:900}
+.edge-head h2{margin:4px 0 5px;font-size:25px;letter-spacing:-.7px}
+.edge-head p{margin:0;color:var(--muted);font-size:12px}
+.edge-live{padding:7px 10px;border-radius:8px;background:color-mix(in srgb,var(--green) 10%,var(--panel));color:var(--green);font-size:10px;font-weight:850;border:1px solid color-mix(in srgb,var(--green) 22%,var(--line))}
+.edge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.edge-card{position:relative;overflow:hidden;padding:16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,var(--panel),var(--panel2));box-shadow:var(--shadow-soft)}
+.edge-card:after{content:"";position:absolute;width:100px;height:100px;right:-45px;top:-45px;border-radius:50%;background:color-mix(in srgb,var(--cyan) 8%,transparent)}
+.edge-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--cyan) 10%,var(--panel));color:var(--cyan);font-size:17px}
+.edge-card h3{font-size:13px;margin:11px 0 5px}.edge-card p{font-size:11px;line-height:1.55;color:var(--muted);min-height:35px;margin:0 0 12px}
+.edge-btn{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:8px;padding:8px 10px;font-weight:800;font-size:11px}.edge-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.edge-btn.primary{background:linear-gradient(100deg,var(--cyan),var(--blue));color:#fff;border:0}
+.edge-score{position:absolute;right:12px;top:13px;font-size:10px;font-weight:900;color:var(--green)}
+.edge-pro{margin-top:14px;display:grid;grid-template-columns:1.7fr 1fr;gap:12px}
+.edge-banner{padding:18px;border-radius:14px;border:1px solid color-mix(in srgb,var(--cyan) 25%,var(--line));background:linear-gradient(105deg,color-mix(in srgb,var(--cyan) 9%,var(--panel)),var(--panel));display:flex;justify-content:space-between;gap:16px;align-items:center}
+.edge-banner h3{margin:0 0 5px;font-size:15px}.edge-banner p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}.edge-banner b{color:var(--cyan)}
+.edge-price{font-size:20px;font-weight:900;white-space:nowrap}.edge-price small{font-size:10px;color:var(--muted);font-weight:600}
+.edge-plans{display:grid;grid-template-columns:1fr 1fr;gap:8px}.edge-plan{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel)}.edge-plan b{font-size:11px}.edge-plan strong{display:block;font-size:17px;margin:5px 0}.edge-plan span{font-size:9px;color:var(--muted)}
+.edge-aiout{display:none;margin-top:12px;padding:13px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);font-size:11px;line-height:1.65;color:var(--muted)}
+@media(max-width:900px){.edge-grid{grid-template-columns:repeat(2,1fr)}.edge-pro{grid-template-columns:1fr}}
+@media(max-width:480px){.edge-grid{grid-template-columns:1fr}.edge-head{align-items:flex-start;flex-direction:column}.edge-banner{align-items:flex-start;flex-direction:column}.edge-price{font-size:18px}}
+</style>
+<section class="edge-section" id="tradinginr-edge">
+<div class="edge-head">
+<div><div class="edge-kicker">TradingINR Edge</div><h2>AI Trading Command Center</h2><p>Find the market setups worth your attention — then investigate them with AI.</p></div>
+<div class="edge-live">● AI RESEARCH · LIVE CONTEXT</div>
+</div>
+<div class="edge-grid">
+<article class="edge-card"><div class="edge-icon">✦</div><span class="edge-score">AI</span><h3>Market Pulse</h3><p>Trend, breadth, volatility and index bias in one view.</p><button class="edge-btn" data-edge-task="summary">Run Market Pulse</button></article>
+<article class="edge-card"><div class="edge-icon">⌁</div><span class="edge-score">OI</span><h3>Options Edge</h3><p>Ask AI to reason through option-chain, OI and positioning context.</p><button class="edge-btn" data-edge-task="options">Analyze Options</button></article>
+<article class="edge-card"><div class="edge-icon">↗</div><span class="edge-score">SCAN</span><h3>Breakout Radar</h3><p>Research momentum, breakout and volume setups across Indian markets.</p><button class="edge-btn primary" data-edge-task="scanner">Scan Setups</button></article>
+<article class="edge-card"><div class="edge-icon">◎</div><span class="edge-score">RISK</span><h3>Risk Guard</h3><p>Turn an idea into entry, stop, target and position-sizing research.</p><button class="edge-btn" data-edge-task="risk">Check Risk</button></article>
+</div>
+<div class="edge-pro">
+<div class="edge-banner"><div><h3>TradingINR <b>PRO</b></h3><p>Build the paid layer around AI analysis, advanced scanners, option intelligence, strategy research and trader analytics.</p></div><div class="edge-price">₹499 <small>/ month</small></div></div>
+<div class="edge-plans"><div class="edge-plan"><b>FREE</b><strong>₹0</strong><span>Basic market tools</span></div><div class="edge-plan"><b>PRO</b><strong>₹499</strong><span>Advanced AI workspace</span></div></div>
+</div>
+<div class="edge-aiout" id="edge-aiout"></div>
+</section>
+<script <!-- TRADINGINR_EDGE_MONETIZATION_V1 -->>
+(function(){
+ const out=document.getElementById("edge-aiout");
+ const prompts={
+  summary:"Give me a concise Indian market pulse for NIFTY, BANKNIFTY and volatility. Separate observed data from inference.",
+  options:"Analyze current Indian F&O option-chain/OI context if available. Explain calls, puts, OI change, support/resistance and risks. Do not invent unavailable data.",
+  scanner:"Scan the current Indian market context for high-quality momentum, breakout, volume or trend setups. Rank the best research candidates and explain confirmation requirements.",
+  risk:"Act as a risk manager. Based on current market context, explain how to structure entry, stop-loss, target and position sizing for a hypothetical trade. Never promise profit."
+ };
+ document.querySelectorAll("[data-edge-task]").forEach(b=>b.addEventListener("click",async()=>{
+  const task=b.dataset.edgeTask;q=prompts[task];if(!q)return;
+  b.disabled=true;b.textContent="AI reading…";out.style.display="block";out.textContent="Central AI is analyzing live market context…";
+  try{const d=await window.TradingINRAI(q,task);const a=d.analysis||{};out.innerHTML="<b>"+(d.source==="openai"?"CENTRAL AI · LIVE":"CENTRAL AI · READY")+"</b><br>"+String(a.answer||"Analysis ready").replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]))+"<br><br><b>Bias:</b> "+(a.bias||"NEUTRAL")+" · <b>Setup:</b> "+(a.setup||"Research only")+"<br><b>Risk:</b> "+(Array.isArray(a.risks)?a.risks.join(" · "):"Use defined risk limits.");}
+  catch(e){out.textContent="AI unavailable · "+(e.message||"error");}
+  finally{b.disabled=false;b.textContent=task==="scanner"?"Scan Setups":task==="summary"?"Run Market Pulse":task==="options"?"Analyze Options":"Check Risk";}
+ }));
+})();
+</script>
+<!-- TRADINGINR_EDGE_MONETIZATION_V1 --></body></html>
 <script id="TRADINGINR_DHAN_LIVE_BRIDGE_V1">
 (function(){
   const ids={
