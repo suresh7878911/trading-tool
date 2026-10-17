@@ -16,7 +16,7 @@ module.exports = async function handler(req,res){
    for(let cur=new Date(start);cur<=end;){const ce=new Date(Math.min(cur.getTime()+89*86400000,end.getTime()));
     const qs=new URLSearchParams({symbol:"NSE:NIFTY50-INDEX",resolution:"5",date_format:"1",range_from:iso(cur),range_to:iso(ce),cont_flag:"1"});
     const up=await fetch("https://api-t1.fyers.in/data/history?"+qs,{headers:{Authorization:appId+":"+token,Accept:"application/json"}});
-    const d=await up.json().catch(()=>({}));if(!up.ok||d.s!=="ok")return res.status(up.status||502).json({ok:false,message:"FYERS history request failed",code:d.code});
+    const d=await up.json().catch(()=>({}));if(!up.ok||d.s!=="ok")return res.status(up.ok?502:up.status).json({ok:false,message:"FYERS history request failed",providerStatus:d.s||null,code:d.code??null,providerMessage:d.message||d.error||null});
     all.push(...(d.candles||[]));cur=new Date(ce.getTime()+86400000);
    }
   }catch(e){return res.status(502).json({ok:false,message:"Unable to reach FYERS historical data"});}
