@@ -33,7 +33,7 @@ module.exports = async function handler(req,res){
       if(!strategy)return res.status(400).json({ok:false,message:"Strategy text is required"});
       const find=(rx,fallback)=>(strategy.match(rx)?.[1]||fallback).trim();
       if(process.env.OPENAI_API_KEY){
-        const upstream=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Content-Type":"application/json","Authorization:"Bearer "+process.env.OPENAI_API_KEY},body:JSON.stringify({model:process.env.OPENAI_MODEL||"gpt-5-mini",input:[
+        const upstream=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+process.env.OPENAI_API_KEY},body:JSON.stringify({model:process.env.OPENAI_MODEL||"gpt-5-mini",input:[
           {role:"system",content:"You are TradingINR Strategy AI for Indian equities and F&O. Never place live orders or promise profits. Return JSON keys market,timeframe,entry,exit,risk,confirmations,filters,backtestPlan,warnings,score. Score is rule completeness 0-100, not expected return."},
           {role:"user",content:"Mode: "+mode+"\\nStrategy:\\n"+strategy}
         ],temperature:0.2})});
